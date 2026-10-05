@@ -32,7 +32,17 @@ export async function create(c: Context<AppEnv>) {
 
   const instance = await c.env.SEARCH_WORKFLOW.create({
     id: `search-${search.id}`,
-    params: { searchId: search.id },
+    params: {
+      searchId: search.id,
+      request: {
+        category: body.category,
+        sector: body.sector,
+        region: body.region,
+        customRegion: body.region === "other" ? body.customRegion?.trim() || undefined : undefined,
+        query: body.query?.trim() || undefined,
+        numResults,
+      },
+    },
   });
   await db.update(searches).set({ workflowId: instance.id }).where(eq(searches.id, search.id));
 

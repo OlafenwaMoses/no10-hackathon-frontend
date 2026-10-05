@@ -13,6 +13,6 @@ export const searchColumns = {
   status: searches.status,
   error: searches.error,
   createdAt: searches.createdAt,
-  candidateCount: sql<number>`(select count(*)::int from ${candidates} where ${candidates.searchId} = ${searches.id})`,
-  scoredCount: sql<number>`(select count(*)::int from ${candidates} where ${candidates.searchId} = ${searches.id} and ${candidates.status} in ('scored', 'failed'))`,
+  candidateCount: sql<number>`(select count(*)::int from ${candidates} where ${candidates.searchId} = "searches"."id")`,
+  scoredCount: sql<number>`(select count(*)::int from ${candidates} where ${candidates.searchId} = "searches"."id" and ${candidates.status} in ('scored', 'failed'))`,
 };
