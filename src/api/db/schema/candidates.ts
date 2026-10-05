@@ -1,4 +1,4 @@
-import { pgTable, text, real, jsonb, uuid, foreignKey, index } from "drizzle-orm/pg-core";
+import { pgTable, text, real, jsonb, uuid, foreignKey, index, timestamp } from "drizzle-orm/pg-core";
 import { createdAt, id, updatedAt } from "./helpers";
 import { searches } from "./searches";
 import type {
@@ -6,6 +6,10 @@ import type {
   CandidateSource,
   CandidateStatus,
   Classification,
+  ContactDetails,
+  NetWorth,
+  NetWorthBand,
+  OutreachStatus,
   GttCriteria,
   LinkedInProfile,
   Resolution,
@@ -49,6 +53,13 @@ export const candidates = pgTable(
     ukLinks: jsonb().$type<UkLinks>(),
     persona: jsonb().$type<PersonaAttributes>(),
     classification: jsonb().$type<Classification>(),
+    netWorth: jsonb().$type<NetWorth>(),
+    netWorthBand: text().$type<NetWorthBand>(),
+    netWorthUsd: real(),
+    contact: jsonb().$type<ContactDetails>(),
+    outreachStatus: text().$type<OutreachStatus>().notNull().default("not_contacted"),
+    outreachNote: text(),
+    contactedAt: timestamp({ withTimezone: true, mode: "string" }),
     score: jsonb().$type<CandidateScore>(),
     overallScore: real(),
     opennessScore: real(),

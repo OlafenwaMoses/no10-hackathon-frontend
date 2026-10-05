@@ -1,5 +1,15 @@
 import type { Theme } from "@emotion/react";
-import type { ResidenceRegion, Sector, TalentCategory, UkLinkVerdict } from "@api-types";
+import type {
+  NetWorth,
+  OutreachStatus,
+  Rag,
+  ResidenceRegion,
+  Resolved,
+  Sector,
+  ShortlistStage,
+  TalentCategory,
+  UkLinkVerdict,
+} from "@api-types";
 
 export type Tone = "neutral" | "blue" | "green" | "amber" | "rose" | "violet" | "teal" | "danger";
 
@@ -38,6 +48,40 @@ export const VERDICT_TONES: Record<UkLinkVerdict, Tone> = {
   some: "amber",
   none_found: "neutral",
   cannot_verify: "neutral",
+};
+
+export const OUTREACH_TONES: Record<OutreachStatus, Tone> = {
+  not_contacted: "neutral",
+  contacted: "blue",
+  in_conversation: "violet",
+  converted: "green",
+  declined: "rose",
+};
+
+export const CONFIDENCE_TONES: Record<NetWorth["confidence"], Tone> = {
+  high: "green",
+  medium: "amber",
+  low: "neutral",
+};
+
+export const SHORTLIST_STAGE_TONES: Record<ShortlistStage, Tone> = {
+  pending: "amber",
+  cleared: "blue",
+  account_managed: "violet",
+  closed: "green",
+  failed: "rose",
+};
+
+export const RAG_TONES: Record<Rag, Tone> = {
+  green: "green",
+  amber: "amber",
+  red: "danger",
+};
+
+export const RESOLVED_TONES: Record<Resolved, Tone> = {
+  yes: "green",
+  partially: "amber",
+  no: "rose",
 };
 
 export function toneForeground(theme: Theme, tone: Tone) {

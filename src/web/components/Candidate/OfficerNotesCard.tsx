@@ -2,15 +2,15 @@ import styled from "@emotion/styled";
 import { NoteIcon } from "@phosphor-icons/react";
 import { SectionBody, SectionCard, SectionHead } from "../UI/PageStyles";
 
-function OfficerNotesCard({ notes }: { notes: string }) {
+function OfficerNotesCard({ notes, inbound }: { notes: string; inbound?: boolean }) {
   return (
     <SectionCard>
       <SectionHead>
         <HeadLabel>
           <NoteIcon size={14} />
-          Officer notes
+          {inbound ? "Their enquiry" : "Officer notes"}
         </HeadLabel>
-        <Verified>Treated as verified</Verified>
+        <Verified>{inbound ? "From the website form" : "Treated as verified"}</Verified>
       </SectionHead>
       <SectionBody>
         <Notes>{notes}</Notes>

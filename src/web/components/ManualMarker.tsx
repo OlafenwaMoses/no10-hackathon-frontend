@@ -3,7 +3,7 @@ import { UserPlusIcon } from "@phosphor-icons/react";
 import Pill from "./UI/Pill";
 import Tooltip from "./UI/Tooltip";
 
-const TOOLTIP = "Added manually by a GTT officer";
+const TOOLTIP = "Added manually by a Global Talent Taskforce officer";
 
 function ManualMarker({ compact }: { compact?: boolean }) {
   if (compact) {

@@ -1,0 +1,222 @@
+.gt-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--color-header-bg);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  backdrop-filter: saturate(1.4) blur(12px);
+}
+
+.gt-header::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: var(--gradient-rule);
+}
+
+.gt-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-height: 72px;
+}
+
+.gt-header__home,
+.gt-footer__home {
+  display: inline-flex;
+  align-items: center;
+  margin-right: auto;
+  border-radius: var(--radius-sm);
+  color: var(--color-heading);
+  text-decoration: none;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand__mark {
+  width: 32px;
+  height: 32px;
+  flex: none;
+}
+
+.brand__mark-bg {
+  fill: var(--color-primary);
+}
+
+.brand__mark-line {
+  fill: none;
+  stroke: var(--color-primary-contrast);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.brand__mark-dot {
+  fill: var(--color-hero-accent);
+}
+
+.brand__name {
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.brand__suffix {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.gt-nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.gt-nav__list {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gt-nav__link {
+  position: relative;
+  display: block;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-text);
+  text-decoration: none;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.gt-nav__link:hover {
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.gt-nav__link--active {
+  color: var(--color-heading);
+  font-weight: 600;
+}
+
+.gt-nav__link--active::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -14px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--color-accent);
+}
+
+.gt-header__toggle {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-heading);
+  font: 600 0.9375rem/1 var(--font-body);
+  cursor: pointer;
+}
+
+.gt-header__toggle .gt-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.gt-header__toggle-close,
+.gt-header--open .gt-header__toggle-open {
+  display: none;
+}
+
+.gt-header--open .gt-header__toggle-close {
+  display: block;
+}
+
+@media (max-width: 860px) {
+  .gt-header__inner {
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    min-height: 64px;
+  }
+
+  .gt-nav {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+  }
+
+  .gt-nav__list {
+    flex-wrap: wrap;
+  }
+
+  .gt-nav__link {
+    padding: 8px 10px;
+  }
+
+  .gt-nav__link--active::after {
+    bottom: 2px;
+    left: 10px;
+    right: 10px;
+  }
+
+  .gt-header--js .gt-header__toggle:not([hidden]) {
+    display: inline-flex;
+  }
+
+  .gt-header--js .gt-nav {
+    display: none;
+  }
+
+  .gt-header--js.gt-header--open .gt-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 0 12px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .gt-header--js.gt-header--open .gt-nav__list {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gt-header--js.gt-header--open .gt-nav__link {
+    padding: 12px 4px;
+    font-size: 1.0625rem;
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0;
+  }
+
+  .gt-header--js.gt-header--open .gt-nav__link--active::after {
+    left: -16px;
+    right: auto;
+    top: 12px;
+    bottom: 12px;
+    width: 3px;
+    height: auto;
+  }
+
+  .gt-header--js.gt-header--open .gt-nav__cta {
+    margin-top: 12px;
+  }
+}

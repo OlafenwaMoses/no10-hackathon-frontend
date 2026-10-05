@@ -32,7 +32,7 @@ export class CandidateWorkflow extends WorkflowEntrypoint<CloudflareBindings, Ca
       await step.do("resolve", STEP_CONFIG, async () => {
         const [candidate] = await this.db((db) => db.select().from(candidates).where(eq(candidates.id, candidateId)));
         if (!candidate) throw new NonRetryableError(`Candidate ${candidateId} not found`);
-        if (candidate.source !== "manual") return false;
+        if (candidate.source === "search") return false;
         if (candidate.resolution && candidate.resolution.method !== "manual_only") return false;
 
         await this.db((db) =>
@@ -93,7 +93,7 @@ export class CandidateWorkflow extends WorkflowEntrypoint<CloudflareBindings, Ca
       });
 
       const classification = await step.do("classify", STEP_CONFIG, async () => {
-        const result = await classifyCandidate(this.env, {
+        const { classification: result, netWorth } = await classifyCandidate(this.env, {
           profileText: enriched.profileText,
           persona,
           ukLinks: enriched.ukLinks,
@@ -111,6 +111,9 @@ export class CandidateWorkflow extends WorkflowEntrypoint<CloudflareBindings, Ca
               criteria: result.criteria,
               residenceRegion: result.residenceRegion,
               nationality: result.nationality,
+              netWorth,
+              netWorthBand: netWorth.band,
+              netWorthUsd: netWorth.estimateUsd,
             })
             .where(eq(candidates.id, candidateId)),
         );

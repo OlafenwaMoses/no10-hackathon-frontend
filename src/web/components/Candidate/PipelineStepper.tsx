@@ -14,7 +14,7 @@ const BASE_STEPS: { status: CandidateStatus; label: string }[] = [
 ];
 
 function failedStatus(candidate: CandidateDetail): CandidateStatus {
-  if (candidate.source === "manual" && !candidate.resolution) return "resolving";
+  if (candidate.source !== "search" && !candidate.resolution) return "resolving";
   if (!candidate.ukLinks) return "enriching";
   if (!candidate.persona) return "building_persona";
   if (candidate.answers.length === 0) return "interviewing";
@@ -22,10 +22,11 @@ function failedStatus(candidate: CandidateDetail): CandidateStatus {
 }
 
 function PipelineStepper({ candidate }: { candidate: CandidateDetail }) {
+  const firstLabel = candidate.source === "inbound" ? "Enquiry received" : "Added";
   const steps =
-    candidate.source === "manual"
-      ? BASE_STEPS.map((step) => (step.status === "discovered" ? { ...step, label: "Added" } : step))
-      : BASE_STEPS.filter((step) => step.status !== "resolving");
+    candidate.source === "search"
+      ? BASE_STEPS.filter((step) => step.status !== "resolving")
+      : BASE_STEPS.map((step) => (step.status === "discovered" ? { ...step, label: firstLabel } : step));
   const failed = candidate.status === "failed";
   const currentStatus = failed ? failedStatus(candidate) : candidate.status;
   const current = steps.findIndex((step) => step.status === currentStatus);

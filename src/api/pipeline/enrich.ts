@@ -21,6 +21,7 @@ const SYSTEM_PROMPT = [
   "Only report ties to the United Kingdom that are supported by a cited source.",
   "Prefer official bios, company and university pages, Companies House, government publications and reputable press.",
   "Ties include studying or working in the UK, directorships of UK companies, UK investments, UK citizenship or residence, their company having a UK office, engagement with the UK Government, and UK events or media.",
+  "Separately, note any public evidence of the person's personal wealth: company exits and their size, founder or executive equity in valued companies, funds they personally backed, rich-list entries, property or philanthropy.",
   "If nothing credible is found, say so rather than guessing.",
 ].join(" ");
 
@@ -48,6 +49,10 @@ const OUTPUT_SCHEMA: JsonSchema = {
     ukGovernmentLinks: {
       type: "string",
       description: "Any engagement with UK Government, departments, UKRI, ARIA or ministers, or an empty string",
+    },
+    wealthEvidence: {
+      type: "string",
+      description: "One or two sentences of sourced evidence about the person's personal wealth (exits, equity in valued companies, rich lists), or an empty string",
     },
     evidence: { type: "string", description: "Two or three sentences summarising what was found and how reliable it is" },
   },
@@ -95,6 +100,7 @@ function toUkLinks(response: DeepSearchResponse): UkLinks {
     links,
     currentCountry: country && country.toLowerCase() !== "unknown" ? country.split(/[(.;]/)[0].trim() : null,
     ukGovernmentLinks: asString(record.ukGovernmentLinks),
+    wealthEvidence: asString(record.wealthEvidence),
     evidence: asString(record.evidence) ?? "",
     citations: citationsFrom(response),
   };
@@ -109,7 +115,7 @@ function describe(candidate: EnrichCandidate) {
 export async function enrichUkLinks(apiKey: string, candidate: EnrichCandidate): Promise<UkLinks> {
   try {
     const response = await exaRequest<DeepSearchResponse>(apiKey, "/search", {
-      query: `${describe(candidate)}: connections to the United Kingdom and UK Government`,
+      query: `${describe(candidate)}: connections to the United Kingdom and UK Government, and evidence of personal wealth`,
       type: "deep",
       numResults: 5,
       contents: { text: false, highlights: false },

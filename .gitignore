@@ -10,3 +10,4 @@ dist-ssr
 .dev.vars
 .wrangler
 .claude/
+exports/

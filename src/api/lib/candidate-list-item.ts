@@ -1,9 +1,9 @@
 import type { candidates } from "../db/schema";
-import type { CandidateListItem } from "../types";
+import type { CandidateListItem, ShortlistStage } from "../types";
 
 type CandidateRow = typeof candidates.$inferSelect;
 
-export function toCandidateListItem(row: CandidateRow): CandidateListItem {
+export function toCandidateListItem(row: CandidateRow, shortlistStage: ShortlistStage | null = null): CandidateListItem {
   return {
     id: row.id,
     name: row.name,
@@ -22,6 +22,11 @@ export function toCandidateListItem(row: CandidateRow): CandidateListItem {
     residenceRegion: row.residenceRegion,
     nationality: row.nationality,
     status: row.status,
+    outreachStatus: row.outreachStatus,
+    shortlistStage,
+    netWorthBand: row.netWorthBand,
+    netWorthUsd: row.netWorthUsd,
+    netWorthConfidence: row.netWorth?.confidence ?? null,
     overallScore: row.overallScore,
     opennessScore: row.opennessScore,
     ukLinkScore: row.ukLinkScore,

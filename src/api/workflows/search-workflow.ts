@@ -5,7 +5,7 @@ import { candidates, searches } from "../db/schema";
 import { withDatabase, type Database } from "../lib/db-client";
 import { discoverPeople } from "../pipeline/discover";
 import { errorMessage } from "../pipeline/retry";
-import type { SearchStatus } from "../types";
+import { ALL, type SearchStatus } from "../types";
 
 export type SearchWorkflowParams = { searchId: string };
 
@@ -31,6 +31,7 @@ export class SearchWorkflow extends WorkflowEntrypoint<CloudflareBindings, Searc
         const [row] = await this.db((db) =>
           db
             .select({
+              kind: searches.kind,
               category: searches.category,
               sector: searches.sector,
               query: searches.query,
@@ -46,7 +47,25 @@ export class SearchWorkflow extends WorkflowEntrypoint<CloudflareBindings, Searc
       await this.setStatus(step, searchId, "discovering");
 
       const candidateIds = await step.do("discover candidates", async () => {
-        const people = await discoverPeople(this.env.EXA_API_KEY, search.query, search.numResults);
+        if (search.kind === "import") {
+          const rows = await this.db((db) =>
+            db
+              .select({ id: candidates.id })
+              .from(candidates)
+              .where(and(eq(candidates.searchId, searchId), eq(candidates.status, "discovered"))),
+          );
+          return rows.map((row) => row.id);
+        }
+        const queries = search.query
+          .split("\n")
+          .map((query) => query.trim())
+          .filter(Boolean);
+        const perQuery = Math.max(1, Math.ceil(search.numResults / queries.length));
+        const batches = await Promise.all(
+          queries.map((query) => discoverPeople(this.env.EXA_API_KEY, query, perQuery)),
+        );
+        const unique = new Map(batches.flat().map((person) => [person.profileUrl, person]));
+        const people = [...unique.values()].slice(0, search.numResults);
         return this.db(async (db) => {
           if (people.length) {
             await db
@@ -55,8 +74,8 @@ export class SearchWorkflow extends WorkflowEntrypoint<CloudflareBindings, Searc
                 people.map((person) => ({
                   ...person,
                   searchId,
-                  category: search.category,
-                  sector: search.sector,
+                  category: search.category === ALL ? ("highly_talented" as const) : search.category,
+                  sector: search.sector === ALL ? ("other" as const) : search.sector,
                   status: "discovered" as const,
                 })),
               )

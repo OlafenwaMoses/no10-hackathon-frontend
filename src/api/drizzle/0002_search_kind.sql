@@ -1,0 +1,1 @@
+ALTER TABLE "searches" ADD COLUMN "kind" text DEFAULT 'search' NOT NULL;

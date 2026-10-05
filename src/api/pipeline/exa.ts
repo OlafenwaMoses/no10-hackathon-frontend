@@ -11,12 +11,12 @@ function retryAfterMs(header: string | null, attempt: number) {
   return backoffDelay(attempt, 2000);
 }
 
-export async function exaRequest<T>(apiKey: string, path: string, body: unknown): Promise<T> {
+export async function exaRequest<T>(apiKey: string, path: string, body?: unknown): Promise<T> {
   for (let attempt = 1; ; attempt++) {
     const response = await fetch(`${EXA_BASE_URL}${path}`, {
-      method: "POST",
+      method: body === undefined ? "GET" : "POST",
       headers: { "content-type": "application/json", "x-api-key": apiKey },
-      body: JSON.stringify(body),
+      body: body === undefined ? undefined : JSON.stringify(body),
     });
     if (response.ok) return (await response.json()) as T;
 

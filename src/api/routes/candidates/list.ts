@@ -1,14 +1,14 @@
 import type { Context } from "hono";
 import { and, eq, ilike, or, sql, type SQL } from "drizzle-orm";
-import { candidates } from "../../db/schema";
+import { candidates, shortlistEntries } from "../../db/schema";
 import { toCandidateListItem } from "../../lib/candidate-list-item";
 import { isOneOf } from "../../lib/is-one-of";
-import { CANDIDATE_STATUSES, GTT_CRITERIA, RESIDENCE_REGIONS, SECTORS, TALENT_CATEGORIES } from "../../types";
+import { CANDIDATE_STATUSES, GTT_CRITERIA, OUTREACH_STATUSES, RESIDENCE_REGIONS, SECTORS, TALENT_CATEGORIES } from "../../types";
 import type { AppEnv } from "../../index";
 
 export async function list(c: Context<AppEnv>) {
   const { db } = c.var;
-  const { category, sector, status, criteria, region, q, searchId } = c.req.query();
+  const { category, sector, status, criteria, region, outreach, q, searchId } = c.req.query();
 
   const filters: SQL[] = [];
   if (isOneOf(TALENT_CATEGORIES, category)) filters.push(eq(candidates.category, category));
@@ -16,6 +16,7 @@ export async function list(c: Context<AppEnv>) {
   if (isOneOf(CANDIDATE_STATUSES, status)) filters.push(eq(candidates.status, status));
   if (isOneOf(GTT_CRITERIA, criteria)) filters.push(eq(candidates.criteria, criteria));
   if (isOneOf(RESIDENCE_REGIONS, region)) filters.push(eq(candidates.residenceRegion, region));
+  if (isOneOf(OUTREACH_STATUSES, outreach)) filters.push(eq(candidates.outreachStatus, outreach));
   if (searchId) filters.push(eq(candidates.searchId, searchId));
   if (q) {
     const pattern = `%${q}%`;
@@ -30,11 +31,12 @@ export async function list(c: Context<AppEnv>) {
   }
 
   const rows = await db
-    .select()
+    .select({ candidate: candidates, shortlistStage: shortlistEntries.stage })
     .from(candidates)
+    .leftJoin(shortlistEntries, eq(shortlistEntries.candidateId, candidates.id))
     .where(and(...filters))
     .orderBy(sql`${candidates.overallScore} DESC NULLS LAST`, sql`${candidates.createdAt} DESC`)
     .limit(500);
 
-  return c.json(rows.map(toCandidateListItem));
+  return c.json(rows.map((row) => toCandidateListItem(row.candidate, row.shortlistStage)));
 }

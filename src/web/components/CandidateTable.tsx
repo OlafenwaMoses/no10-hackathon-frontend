@@ -2,14 +2,18 @@ import styled from "@emotion/styled";
 import type { ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import type { CandidateListItem } from "@api-types";
-import { CANDIDATE_STATUSES, GTT_LEVER_LABELS, RESIDENCE_REGION_LABELS } from "../lib/labels";
+import { CANDIDATE_STATUSES, GTT_LEVER_LABELS, OUTREACH_STATUSES, RESIDENCE_REGION_LABELS } from "../lib/labels";
 import Avatar from "./Avatar";
 import CategoryTag from "./CategoryTag";
 import SectorTag from "./SectorTag";
 import VerdictPill from "./VerdictPill";
 import ScoreMeter from "./ScoreMeter";
 import CandidateStatusPill from "./CandidateStatusPill";
+import OutreachStatusPill from "./OutreachStatusPill";
+import NetWorthCell from "./NetWorthCell";
 import ManualMarker from "./ManualMarker";
+import InboundMarker from "./InboundMarker";
+import ShortlistMarker from "./Shortlist/ShortlistMarker";
 import Skeleton from "./UI/Skeleton";
 import SortHeaderButton from "./UI/SortHeaderButton";
 import TruncatedText from "./UI/TruncatedText";
@@ -24,21 +28,25 @@ type SortKey =
   | "ukLinks"
   | "openness"
   | "overall"
+  | "netWorth"
+  | "outreach"
   | "lever"
   | "status";
 
-const NUMERIC_KEYS: SortKey[] = ["ukLinks", "openness", "overall"];
+const NUMERIC_KEYS: SortKey[] = ["ukLinks", "openness", "overall", "netWorth", "outreach"];
 
-const COLUMNS: { key: SortKey; label: string; width: number | string }[] = [
-  { key: "name", label: "Name", width: "26%" },
-  { key: "category", label: "Category", width: 124 },
-  { key: "sector", label: "Sector", width: 168 },
-  { key: "region", label: "Residence", width: 150 },
-  { key: "ukLinks", label: "UK links", width: 116 },
-  { key: "openness", label: "Openness", width: 112 },
-  { key: "overall", label: "Score", width: 124 },
-  { key: "lever", label: "Top lever", width: "18%" },
-  { key: "status", label: "Status", width: 132 },
+const COLUMNS: { key: SortKey; label: string; width: number }[] = [
+  { key: "name", label: "Name", width: 300 },
+  { key: "category", label: "Category", width: 150 },
+  { key: "sector", label: "Sector", width: 240 },
+  { key: "region", label: "Residence", width: 230 },
+  { key: "ukLinks", label: "UK links", width: 150 },
+  { key: "openness", label: "Openness", width: 140 },
+  { key: "overall", label: "Score", width: 140 },
+  { key: "netWorth", label: "Net worth", width: 160 },
+  { key: "outreach", label: "Outreach", width: 170 },
+  { key: "lever", label: "Top lever", width: 260 },
+  { key: "status", label: "Status", width: 160 },
 ];
 
 const SKELETON_ROWS = 8;
@@ -61,6 +69,10 @@ function sortValue(candidate: CandidateListItem, key: SortKey): string | number 
       return candidate.opennessScore;
     case "overall":
       return candidate.overallScore;
+    case "netWorth":
+      return candidate.netWorthUsd;
+    case "outreach":
+      return candidate.outreachStatus === "not_contacted" ? null : OUTREACH_STATUSES.indexOf(candidate.outreachStatus);
     case "lever":
       return candidate.topLevers[0] ? GTT_LEVER_LABELS[candidate.topLevers[0]] : null;
     case "status":
@@ -100,7 +112,7 @@ function CandidateTable({ candidates, isLoading, empty }: CandidateTableProps) {
 
   return (
     <TableFrame>
-      <DataTable>
+      <WideTable>
         <colgroup>
           {COLUMNS.map((column) => (
             <col key={column.key} style={{ width: column.width }} />
@@ -156,7 +168,9 @@ function CandidateTable({ candidates, isLoading, empty }: CandidateTableProps) {
                       <Lines>
                         <NameRow>
                           <Name text={candidate.name} />
+                          {candidate.shortlistStage && <ShortlistMarker stage={candidate.shortlistStage} />}
                           {candidate.source === "manual" && <ManualMarker compact />}
+                          {candidate.source === "inbound" && <InboundMarker compact />}
                         </NameRow>
                         <Headline
                           text={
@@ -204,6 +218,20 @@ function CandidateTable({ candidates, isLoading, empty }: CandidateTableProps) {
                     <ScoreMeter value={candidate.overallScore} emphasis />
                   </td>
                   <td>
+                    <NetWorthCell
+                      band={candidate.netWorthBand}
+                      estimateUsd={candidate.netWorthUsd}
+                      confidence={candidate.netWorthConfidence}
+                    />
+                  </td>
+                  <td>
+                    {candidate.outreachStatus === "not_contacted" ? (
+                      <Blank>—</Blank>
+                    ) : (
+                      <OutreachStatusPill status={candidate.outreachStatus} />
+                    )}
+                  </td>
+                  <td>
                     {candidate.topLevers[0] ? (
                       <LeverText text={GTT_LEVER_LABELS[candidate.topLevers[0]]} />
                     ) : (
@@ -216,7 +244,7 @@ function CandidateTable({ candidates, isLoading, empty }: CandidateTableProps) {
                 </ClickableRow>
               ))}
         </tbody>
-      </DataTable>
+      </WideTable>
     </TableFrame>
   );
 }
@@ -298,4 +326,20 @@ const LeverText = styled(TruncatedText)(({ theme }) => ({
   overflow: "hidden",
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
+}));
+
+const WideTable = styled(DataTable)(({ theme }) => ({
+  minWidth: COLUMNS.reduce((total, column) => total + column.width, 0),
+  "& th:first-of-type, & td:first-of-type": {
+    position: "sticky",
+    left: 0,
+    zIndex: 1,
+    boxShadow: `inset -1px 0 0 ${theme.borderFaint}`,
+  },
+  "& th:first-of-type": {
+    backgroundColor: theme.surface100,
+  },
+  "& td:first-of-type": {
+    backgroundColor: `var(--row-bg, ${theme.surface00})`,
+  },
 }));

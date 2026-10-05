@@ -20,6 +20,7 @@ export async function get(c: Context<AppEnv>) {
       .select({
         candidates: sql<number>`count(*)::int`,
         scored: sql<number>`count(*) filter (where ${candidates.status} = 'scored')::int`,
+        actioned: sql<number>`count(*) filter (where ${candidates.outreachStatus} <> 'not_contacted')::int`,
         averageOpenness: sql<number | null>`avg(${candidates.opennessScore})::float`,
       })
       .from(candidates),
@@ -47,6 +48,7 @@ export async function get(c: Context<AppEnv>) {
   const stats: Stats = {
     candidates: totals.candidates,
     scored: totals.scored,
+    actioned: totals.actioned,
     searches: searchTotals.count,
     averageOpenness: totals.averageOpenness === null ? null : Math.round(totals.averageOpenness),
     byCategory,

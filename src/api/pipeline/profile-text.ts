@@ -58,7 +58,7 @@ function linkedInSection(candidate: ProfileCandidate) {
 }
 
 function userSuppliedSection(candidate: ProfileCandidate) {
-  if (candidate.source !== "manual") return null;
+  if (candidate.source === "search") return null;
   const lines = [
     candidate.organisation ? `Organisation: ${candidate.organisation}` : null,
     candidate.title ? `Role: ${candidate.title}` : null,
@@ -67,7 +67,11 @@ function userSuppliedSection(candidate: ProfileCandidate) {
     candidate.notes ? `Notes: ${candidate.notes}` : null,
   ].filter((line) => line !== null);
   if (lines.length === 0) return null;
-  return `**Very Important: User Supplied Information** (supplied by a Global Talent Taskforce officer and verified; MUST take precedence over anything below that conflicts with it)\n${lines.join("\n")}`;
+  const origin =
+    candidate.source === "inbound"
+      ? "self-reported by the person through the Global Talent Taskforce website enquiry form; treat as their own first-hand account"
+      : "supplied by a Global Talent Taskforce officer and verified";
+  return `**Very Important: User Supplied Information** (${origin}; MUST take precedence over anything below that conflicts with it)\n${lines.join("\n")}`;
 }
 
 function positionsSection(candidate: ProfileCandidate) {

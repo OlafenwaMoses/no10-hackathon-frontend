@@ -1,12 +1,13 @@
 import { pgTable, text, integer } from "drizzle-orm/pg-core";
 import { createdAt, id, updatedAt } from "./helpers";
-import type { SearchSector, SearchStatus, TalentCategory } from "../../types";
+import type { SearchCategoryChoice, SearchKind, SearchSectorChoice, SearchStatus } from "../../types";
 
 export const searches = pgTable("searches", {
   id,
   name: text().notNull(),
-  category: text().$type<TalentCategory>().notNull(),
-  sector: text().$type<SearchSector>().notNull(),
+  kind: text().$type<SearchKind>().notNull().default("search"),
+  category: text().$type<SearchCategoryChoice>().notNull(),
+  sector: text().$type<SearchSectorChoice>().notNull(),
   region: text(),
   query: text().notNull(),
   numResults: integer().notNull().default(10),

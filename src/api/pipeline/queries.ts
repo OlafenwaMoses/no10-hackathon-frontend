@@ -1,9 +1,14 @@
 import {
+  ALL,
+  ALL_CATEGORIES_LABEL,
+  ALL_SECTORS_LABEL,
   RESIDENCE_REGION_LABELS,
   SECTOR_LABELS,
+  TALENT_CATEGORIES,
   TALENT_CATEGORY_LABELS,
+  type SearchCategoryChoice,
   type SearchRegion,
-  type SearchSector,
+  type SearchSectorChoice,
   type TalentCategory,
 } from "../types";
 
@@ -24,7 +29,7 @@ export function resolveSearchRegion(region: SearchRegion | undefined, customRegi
   return { label: RESIDENCE_REGION_LABELS[region], phrase: REGION_QUERY_PHRASES[region] };
 }
 
-const SECTOR_TERMS: Record<SearchSector, { field: string; companies: string; research: string; talent: string }> = {
+const SECTOR_TERMS: Record<SearchSectorChoice, { field: string; companies: string; research: string; talent: string }> = {
   digital_tech: {
     field: "software, fintech, cybersecurity, quantum and deep tech",
     companies: "software, fintech, cybersecurity, quantum computing, semiconductor and deep tech companies",
@@ -49,6 +54,12 @@ const SECTOR_TERMS: Record<SearchSector, { field: string; companies: string; res
     research: "renewable energy, energy storage, batteries, fusion, hydrogen, carbon capture or climate science",
     talent: "senior engineers and scientists at leading clean energy, battery, fusion and climate tech companies",
   },
+  all: {
+    field: "AI, digital technology, life sciences and clean energy",
+    companies: "AI, deep tech, biotech, medtech, climate tech and clean energy companies",
+    research: "artificial intelligence, computer science, biomedical science or clean energy",
+    talent: "senior scientists, engineers and technical leaders at leading AI, deep tech, biotech and clean energy companies",
+  },
   pan_economy: {
     field: "high-growth companies across sectors",
     companies: "high-growth, venture-backed companies across technology, life sciences, energy and consumer sectors",
@@ -61,7 +72,7 @@ function locationClause(region?: string) {
   return region ? `based in ${region}, outside the United Kingdom` : "based outside the United Kingdom";
 }
 
-export function buildSearchQuery(category: TalentCategory, sector: SearchSector, region?: string) {
+function buildCategoryQuery(category: TalentCategory, sector: SearchSectorChoice, region?: string) {
   const terms = SECTOR_TERMS[sector];
   const location = locationClause(region?.trim() || undefined);
 
@@ -77,7 +88,14 @@ export function buildSearchQuery(category: TalentCategory, sector: SearchSector,
   return queries[category];
 }
 
-export function searchName(category: TalentCategory, sector: SearchSector, region?: string) {
-  const base = `${TALENT_CATEGORY_LABELS[category]} · ${SECTOR_LABELS[sector]}`;
+export function buildSearchQueries(category: SearchCategoryChoice, sector: SearchSectorChoice, region?: string) {
+  const categories = category === ALL ? TALENT_CATEGORIES : [category];
+  return categories.map((item) => buildCategoryQuery(item, sector, region));
+}
+
+export function searchName(category: SearchCategoryChoice, sector: SearchSectorChoice, region?: string) {
+  const categoryLabel = category === ALL ? ALL_CATEGORIES_LABEL : TALENT_CATEGORY_LABELS[category];
+  const sectorLabel = sector === ALL ? ALL_SECTORS_LABEL : SECTOR_LABELS[sector];
+  const base = `${categoryLabel} · ${sectorLabel}`;
   return region?.trim() ? `${base} · ${region.trim()}` : base;
 }

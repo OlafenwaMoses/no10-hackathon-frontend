@@ -3,14 +3,9 @@ import type { InterviewAnswer } from "@api-types";
 import DistributionBars from "./DistributionBars";
 import PersonaQuote from "./PersonaQuote";
 import { Eyebrow } from "../UI/PageStyles";
+import { answerShares, expectedScore } from "../../lib/interview";
 
 const TYPE_LABELS = { scale: "Scale", choice: "Multiple choice", open: "Open question" } as const;
-
-function normalise(probs: number[], length: number) {
-  const values = Array.from({ length }, (_, index) => Math.max(0, probs[index] ?? 0));
-  const total = values.reduce((sum, value) => sum + value, 0);
-  return total > 0 ? values.map((value) => value / total) : values;
-}
 
 type InterviewAnswerCardProps = {
   answer: InterviewAnswer;
@@ -18,10 +13,8 @@ type InterviewAnswerCardProps = {
 };
 
 function InterviewAnswerCard({ answer, index }: InterviewAnswerCardProps) {
-  const shares = normalise(answer.probs, answer.options.length);
-  const meanIndex = shares.reduce((sum, share, position) => sum + share * position, 0);
-  const fallback = answer.options.length > 1 ? (meanIndex / (answer.options.length - 1)) * 100 : 50;
-  const expected = Math.max(0, Math.min(100, answer.expected ?? fallback));
+  const shares = answerShares(answer);
+  const expected = expectedScore(answer);
 
   return (
     <Card>

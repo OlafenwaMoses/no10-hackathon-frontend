@@ -1,9 +1,10 @@
 import styled from "@emotion/styled";
 import { useNavigate } from "@tanstack/react-router";
 import type { SearchListItem } from "@api-types";
-import CategoryTag from "./CategoryTag";
-import SectorTag from "./SectorTag";
+import SearchCategoryTag from "./SearchCategoryTag";
+import SearchSectorTag from "./SearchSectorTag";
 import SearchStatusPill from "./SearchStatusPill";
+import ImportedTag from "./ImportedTag";
 import ProgressBar from "./ProgressBar";
 import Skeleton from "./UI/Skeleton";
 import TruncatedText from "./UI/TruncatedText";
@@ -71,13 +72,29 @@ function SearchesTable({ searches, isLoading }: SearchesTableProps) {
                       <Query text={search.query} />
                     </Lines>
                   </td>
-                  <td>
-                    <CategoryTag category={search.category} />
-                  </td>
-                  <td>
-                    <SectorTag sector={search.sector} />
-                  </td>
-                  <td>{search.region ? <TruncatedText text={search.region} /> : <Muted>Global</Muted>}</td>
+                  {search.kind === "import" ? (
+                    <>
+                      <td>
+                        <ImportedTag />
+                      </td>
+                      <td>
+                        <Blank>—</Blank>
+                      </td>
+                      <td>
+                        <Blank>—</Blank>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td>
+                        <SearchCategoryTag category={search.category} />
+                      </td>
+                      <td>
+                        <SearchSectorTag sector={search.sector} />
+                      </td>
+                      <td>{search.region ? <TruncatedText text={search.region} /> : <Muted>Global</Muted>}</td>
+                    </>
+                  )}
                   <td>
                     <SearchStatusPill status={search.status} />
                   </td>

@@ -1,0 +1,112 @@
+.gt-footer {
+  background:
+    radial-gradient(45% 90% at 100% 0%, rgba(27, 79, 174, 0.28) 0%, transparent 70%),
+    var(--color-footer-bg);
+  color: var(--color-footer-text);
+  padding: 72px 0 96px;
+}
+
+.gt-footer__top {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(3, 1fr);
+  gap: 40px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--color-footer-border);
+}
+
+.gt-footer .gt-footer__home {
+  color: var(--color-footer-text);
+}
+
+.gt-footer .brand__suffix {
+  color: var(--color-footer-muted);
+}
+
+.gt-footer .brand__mark-bg {
+  fill: var(--color-footer-text);
+}
+
+.gt-footer .brand__mark-line {
+  stroke: var(--color-footer-bg);
+}
+
+.gt-footer__tagline {
+  margin: 16px 0 0;
+  max-width: 22em;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-footer-muted);
+}
+
+.gt-footer__heading {
+  margin: 4px 0 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-footer-muted);
+}
+
+.gt-footer__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gt-footer__list li {
+  margin-bottom: 10px;
+}
+
+.gt-footer__link,
+.gt-footer__link:link,
+.gt-footer__link:visited {
+  font-size: 0.9375rem;
+  color: var(--color-footer-text);
+  text-decoration: none;
+}
+
+.gt-footer__link:hover {
+  color: var(--color-footer-text);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.gt-footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 32px;
+  padding-top: 24px;
+  font-size: 0.8125rem;
+  color: var(--color-footer-muted);
+}
+
+.gt-footer__bottom p {
+  margin: 0;
+}
+
+.gt-footer__bottom .gt-footer__link {
+  font-size: inherit;
+  color: var(--color-footer-muted);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+@media (max-width: 860px) {
+  .gt-footer__top {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gt-footer__brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .gt-footer {
+    padding-top: 56px;
+  }
+
+  .gt-footer__top {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}

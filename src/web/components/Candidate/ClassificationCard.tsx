@@ -9,7 +9,7 @@ import { P } from "../../lib/utilityComponents";
 function ClassificationCard({ classification }: { classification: Classification }) {
   const rows = [
     { label: "Type of Individual", value: <CategoryTag category={classification.category} /> },
-    { label: "GTT Priority Sector", value: <SectorTag sector={classification.sector} /> },
+    { label: "Priority sector", value: <SectorTag sector={classification.sector} /> },
     { label: "Sub-sector", value: classification.subSector || null },
     { label: "Criteria", value: GTT_CRITERIA_LABELS[classification.criteria] },
     { label: "Current residence", value: RESIDENCE_REGION_LABELS[classification.residenceRegion] },
@@ -18,7 +18,7 @@ function ClassificationCard({ classification }: { classification: Classification
 
   return (
     <SectionCard>
-      <SectionHead>GTT classification</SectionHead>
+      <SectionHead>Global Talent Taskforce classification</SectionHead>
       <SectionBody>
         <Rows>
           {rows.map((row) => (

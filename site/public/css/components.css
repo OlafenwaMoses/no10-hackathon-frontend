@@ -1,0 +1,203 @@
+.gt-arrow-link,
+.gt-arrow-link:link,
+.gt-arrow-link:visited {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--color-link);
+  text-decoration: none;
+}
+
+.gt-arrow-link .gt-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+}
+
+.gt-arrow-link:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1px;
+}
+
+.gt-arrow-link:hover .gt-icon--arrow {
+  transform: translateX(3px);
+}
+
+.gt-glance {
+  padding: 28px 32px;
+  border-radius: var(--radius-lg);
+  background: var(--gradient-tint);
+  border: 1px solid var(--color-accent-line);
+}
+
+.gt-glance__title {
+  margin: 0 0 16px;
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--color-heading);
+}
+
+.gt-glance__list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gt-glance__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--color-heading);
+}
+
+.gt-glance__item .gt-icon {
+  flex: none;
+  margin-top: 1px;
+  width: 22px;
+  height: 22px;
+  color: var(--color-accent);
+  stroke-width: 2;
+}
+
+.gt-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 24px 0 0;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.gt-check > .gt-icon {
+  margin-top: 1px;
+  width: 20px;
+  height: 20px;
+  color: var(--color-accent);
+}
+
+.gt-check__text {
+  margin: 0;
+}
+
+.gt-check__text strong {
+  font-weight: 600;
+  color: var(--color-heading);
+}
+
+.gt-check__sep {
+  color: var(--color-border-strong);
+}
+
+.gt-contact {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--gradient-contact);
+  color: var(--color-hero-text);
+  box-shadow: var(--shadow-lg);
+}
+
+.gt-contact__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "title cta"
+    "text cta";
+  align-items: center;
+  column-gap: 48px;
+  padding: 56px;
+}
+
+.gt-contact__title {
+  grid-area: title;
+  max-width: 16em;
+  font-size: clamp(1.75rem, 1.3rem + 1.2vw, 2.375rem);
+  color: var(--color-hero-text);
+}
+
+.gt-contact__text {
+  grid-area: text;
+  margin: 14px 0 0;
+  max-width: 36em;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--color-hero-muted);
+}
+
+.gt-contact__cta {
+  grid-area: cta;
+  justify-self: end;
+}
+
+.govuk-inset-text {
+  margin: 24px 0;
+  padding: 16px 20px;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--color-surface-tint);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.govuk-inset-text > :last-child {
+  margin-bottom: 0;
+}
+
+.govuk-details {
+  margin: 16px 0 24px;
+}
+
+.govuk-details__summary {
+  color: var(--color-link);
+}
+
+.govuk-details__summary:focus {
+  background: none;
+  box-shadow: none;
+  color: var(--color-link);
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.govuk-details__summary:focus .govuk-details__summary-text {
+  text-decoration: underline;
+}
+
+.govuk-details__text {
+  border-left-color: var(--color-border);
+}
+
+.govuk-warning-text__icon {
+  background: var(--color-heading);
+  border-color: var(--color-heading);
+  color: var(--color-primary-contrast);
+}
+
+@media (max-width: 860px) {
+  .gt-contact__inner {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "title"
+      "text"
+      "cta";
+    padding: 32px 24px;
+  }
+
+  .gt-contact__cta {
+    justify-self: start;
+    margin-top: 28px;
+  }
+}

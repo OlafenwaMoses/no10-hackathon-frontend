@@ -225,7 +225,7 @@ function AddPersonModal() {
               />
             </Field>
             <Field>
-              <Label>GTT sector</Label>
+              <Label>Taskforce priority sector</Label>
               <SelectMenu
                 value={sector ?? AUTO}
                 onChange={(value) => setSector(parseEnum(SECTORS, value))}

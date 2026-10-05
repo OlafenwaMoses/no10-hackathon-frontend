@@ -2,8 +2,11 @@ import styled from "@emotion/styled";
 import { useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import type { SearchRegion, SearchSector, TalentCategory } from "@api-types";
+import type { SearchCategoryChoice, SearchRegion, SearchSectorChoice } from "@api-types";
 import {
+  ALL,
+  ALL_CATEGORIES_LABEL,
+  ALL_SECTORS_LABEL,
   RESIDENCE_REGION_LABELS,
   SEARCH_REGIONS,
   SEARCH_SECTORS,
@@ -31,11 +34,24 @@ const REGION_OPTIONS = [
   ...SEARCH_REGIONS.map((id) => ({ id, name: id === "other" ? "Other…" : RESIDENCE_REGION_LABELS[id] })),
 ];
 
+const CATEGORY_CHOICES = [ALL, ...TALENT_CATEGORIES] as const;
+const SECTOR_CHOICES = [ALL, ...SEARCH_SECTORS] as const;
+
+const CATEGORY_OPTIONS = [
+  { id: ALL, name: ALL_CATEGORIES_LABEL },
+  ...TALENT_CATEGORIES.map((id) => ({ id, name: TALENT_CATEGORY_LABELS[id] })),
+];
+
+const SECTOR_OPTIONS = [
+  { id: ALL, name: ALL_SECTORS_LABEL },
+  ...SEARCH_SECTORS.map((id) => ({ id, name: SECTOR_LABELS[id] })),
+];
+
 function NewSearchModal() {
   const navigate = useNavigate();
   const { createSearch, isCreating } = useCreateSearch();
-  const [category, setCategory] = useState<TalentCategory>("founder");
-  const [sector, setSector] = useState<SearchSector>("digital_tech");
+  const [category, setCategory] = useState<SearchCategoryChoice>(ALL);
+  const [sector, setSector] = useState<SearchSectorChoice>(ALL);
   const [region, setRegion] = useState<SearchRegion | undefined>(undefined);
   const [customRegion, setCustomRegion] = useState("");
   const [numResults, setNumResults] = useState("10");
@@ -91,19 +107,19 @@ function NewSearchModal() {
         <Fields>
           <Row>
             <Field>
-              <Label>Category</Label>
+              <Label>Type of individual</Label>
               <SelectMenu
                 value={category}
-                onChange={(value) => setCategory(parseEnum(TALENT_CATEGORIES, value) ?? category)}
-                options={TALENT_CATEGORIES.map((id) => ({ id, name: TALENT_CATEGORY_LABELS[id] }))}
+                onChange={(value) => setCategory(parseEnum(CATEGORY_CHOICES, value) ?? category)}
+                options={CATEGORY_OPTIONS}
               />
             </Field>
             <Field>
               <Label>Sector</Label>
               <SelectMenu
                 value={sector}
-                onChange={(value) => setSector(parseEnum(SEARCH_SECTORS, value) ?? sector)}
-                options={SEARCH_SECTORS.map((id) => ({ id, name: SECTOR_LABELS[id] }))}
+                onChange={(value) => setSector(parseEnum(SECTOR_CHOICES, value) ?? sector)}
+                options={SECTOR_OPTIONS}
               />
             </Field>
           </Row>
@@ -142,6 +158,12 @@ function NewSearchModal() {
             </Field>
           )}
           {!countValid && <Hint data-error>Choose between {MIN_PEOPLE} and {MAX_PEOPLE} people.</Hint>}
+          {countValid && category === ALL && (
+            <Hint>
+              {parsedCount} people in total, spread across the {TALENT_CATEGORIES.length} types of individual. Each
+              person is then classified individually.
+            </Hint>
+          )}
           <Field>
             <Label htmlFor="search-query">
               Custom Exa query <Optional>optional</Optional>

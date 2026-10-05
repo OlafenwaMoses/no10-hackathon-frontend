@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { useLocation } from "@tanstack/react-router";
-import { MagnifyingGlassIcon, UsersThreeIcon } from "@phosphor-icons/react";
+import { MagnifyingGlassIcon, StarIcon, UsersThreeIcon } from "@phosphor-icons/react";
 import Tooltip from "../UI/Tooltip";
 import NavCollapseToggle from "./NavCollapseToggle";
 import { Footer, IconSlot, Items, LogoLink, NavRow, Rail, RowLabel, SwitcherSlot, TopSlot } from "./navChrome";
@@ -9,6 +9,7 @@ import LogoIcon from "../../assets/logo.svg?react";
 
 const NAV_ITEMS = [
   { to: "/", label: "Talent database", icon: UsersThreeIcon, prefix: "/candidates" },
+  { to: "/shortlist", label: "Shortlist", icon: StarIcon, prefix: "/shortlist" },
   { to: "/searches", label: "Searches", icon: MagnifyingGlassIcon, prefix: "/searches" },
 ] as const;
 

@@ -4,6 +4,7 @@ import { candidates, searches } from "../db/schema";
 export const searchColumns = {
   id: searches.id,
   name: searches.name,
+  kind: searches.kind,
   category: searches.category,
   sector: searches.sector,
   region: searches.region,

@@ -32,6 +32,12 @@ export const SECTOR_LABELS: Record<Sector, string> = {
 export const SEARCH_SECTORS = ["digital_tech", "ai", "life_sciences", "clean_energy", "pan_economy"] as const;
 export type SearchSector = (typeof SEARCH_SECTORS)[number];
 
+export const ALL = "all";
+export type SearchCategoryChoice = TalentCategory | typeof ALL;
+export type SearchSectorChoice = SearchSector | typeof ALL;
+export const ALL_CATEGORIES_LABEL = "All types";
+export const ALL_SECTORS_LABEL = "All priority sectors";
+
 export const GTT_CRITERIA = [
   "digital_tech_talent",
   "life_sciences_talent",
@@ -98,6 +104,49 @@ export type Classification = {
   rationale: string;
 };
 
+export const SEARCH_KINDS = ["search", "import"] as const;
+export type SearchKind = (typeof SEARCH_KINDS)[number];
+
+export const MAX_IMPORT_ROWS = 100;
+
+export type ImportRow = {
+  name: string;
+  organisation?: string;
+  title?: string;
+  profileUrl?: string;
+  location?: string;
+  nationality?: string;
+  category?: string;
+  sector?: string;
+  notes?: string;
+  tracker?: ImportTrackerFields;
+};
+
+export const IMPORT_TRACKER_FIELDS = [
+  "stage",
+  "priority",
+  "successRag",
+  "relationshipRag",
+  "supportLevel",
+  "backgroundCheck",
+  "relationshipHolder",
+  "accountManager",
+  "leadSource",
+  "nextStep",
+  "originDate",
+  "dataHubLink",
+] as const;
+export type ImportTrackerField = (typeof IMPORT_TRACKER_FIELDS)[number];
+export type ImportTrackerFields = Partial<Record<ImportTrackerField, string>>;
+
+export type ImportBody = { fileName: string; rows: ImportRow[] };
+
+export type ImportResponse = {
+  searchId: string | null;
+  created: number;
+  skipped: { name: string; reason: string }[];
+};
+
 export const SEARCH_STATUSES = ["queued", "discovering", "processing", "complete", "failed"] as const;
 export type SearchStatus = (typeof SEARCH_STATUSES)[number];
 
@@ -113,7 +162,200 @@ export const CANDIDATE_STATUSES = [
 ] as const;
 export type CandidateStatus = (typeof CANDIDATE_STATUSES)[number];
 
-export const CANDIDATE_SOURCES = ["search", "manual"] as const;
+export const OUTREACH_STATUSES = ["not_contacted", "contacted", "in_conversation", "converted", "declined"] as const;
+export type OutreachStatus = (typeof OUTREACH_STATUSES)[number];
+
+export const OUTREACH_STATUS_LABELS: Record<OutreachStatus, string> = {
+  not_contacted: "Not contacted",
+  contacted: "Contacted",
+  in_conversation: "In conversation",
+  converted: "Converted",
+  declined: "Declined",
+};
+
+export type ContactDetails = {
+  status: "searching" | "found" | "not_found" | "failed";
+  runId: string | null;
+  emails: string[];
+  phones: string[];
+  linkedinUrl: string | null;
+  website: string | null;
+  twitter: string | null;
+  notes: string | null;
+  error: string | null;
+  checkedAt: string;
+};
+
+export type UpdateOutreachBody = { status: OutreachStatus; note?: string };
+
+export const NET_WORTH_BANDS = ["under_1m", "1m_10m", "10m_30m", "30m_100m", "100m_1bn", "over_1bn", "unknown"] as const;
+export type NetWorthBand = (typeof NET_WORTH_BANDS)[number];
+
+export const NET_WORTH_BAND_LABELS: Record<NetWorthBand, string> = {
+  under_1m: "Under $1m",
+  "1m_10m": "$1m–10m",
+  "10m_30m": "$10m–30m",
+  "30m_100m": "$30m–100m",
+  "100m_1bn": "$100m–1bn",
+  over_1bn: "$1bn+",
+  unknown: "Unknown",
+};
+
+export type NetWorth = {
+  band: NetWorthBand;
+  estimateUsd: number | null;
+  confidence: "high" | "medium" | "low";
+  basis: string;
+};
+
+export const SHORTLIST_STAGES = ["pending", "cleared", "account_managed", "closed", "failed"] as const;
+export type ShortlistStage = (typeof SHORTLIST_STAGES)[number];
+
+export const SHORTLIST_STAGE_LABELS: Record<ShortlistStage, string> = {
+  pending: "Pending clearance",
+  cleared: "Cleared (to be pitched)",
+  account_managed: "Account managed",
+  closed: "Closed",
+  failed: "Failed",
+};
+
+export const RAG_VALUES = ["green", "amber", "red"] as const;
+export type Rag = (typeof RAG_VALUES)[number];
+
+export const SUPPORT_LEVELS = ["full", "light"] as const;
+export type SupportLevel = (typeof SUPPORT_LEVELS)[number];
+
+export const SUPPORT_LEVEL_LABELS: Record<SupportLevel, string> = {
+  full: "Full AM",
+  light: "Light-touch",
+};
+
+export const BACKGROUND_CHECKS = ["not_started", "pending", "clear", "flagged"] as const;
+export type BackgroundCheck = (typeof BACKGROUND_CHECKS)[number];
+
+export const BACKGROUND_CHECK_LABELS: Record<BackgroundCheck, string> = {
+  not_started: "Not started",
+  pending: "Pending",
+  clear: "Clear",
+  flagged: "Flagged",
+};
+
+export const LEAD_SOURCES = [
+  "global_talent_radar",
+  "website",
+  "number_10",
+  "ogd",
+  "dbt_ofi",
+  "external",
+  "post_usa",
+  "post_brazil",
+  "post_india",
+  "post_singapore",
+] as const;
+export type LeadSource = (typeof LEAD_SOURCES)[number];
+
+export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
+  global_talent_radar: "Global Talent Radar",
+  website: "Website enquiry",
+  number_10: "Number 10",
+  ogd: "OGD",
+  dbt_ofi: "DBT/OfI",
+  external: "External",
+  post_usa: "Post-USA",
+  post_brazil: "Post-Brazil",
+  post_india: "Post-India",
+  post_singapore: "Post-Singapore",
+};
+
+export const ISSUE_CATEGORIES = [
+  "visas",
+  "tax",
+  "capital_markets",
+  "banking",
+  "research_incentives",
+  "regulation",
+  "business_support",
+] as const;
+export type IssueCategory = (typeof ISSUE_CATEGORIES)[number];
+
+export const ISSUE_CATEGORY_LABELS: Record<IssueCategory, string> = {
+  visas: "Visas",
+  tax: "Tax",
+  capital_markets: "Capital Markets",
+  banking: "Banking",
+  research_incentives: "Research Incentives",
+  regulation: "Regulation",
+  business_support: "Business support",
+};
+
+export const RESOLVED_VALUES = ["yes", "partially", "no"] as const;
+export type Resolved = (typeof RESOLVED_VALUES)[number];
+
+export const SUCCESS_CATEGORIES = [
+  "full_relocation",
+  "increased_investment",
+  "increased_business_activity",
+  "increased_uk_presence",
+  "project_research_relocation",
+  "remain_in_uk",
+] as const;
+export type SuccessCategory = (typeof SUCCESS_CATEGORIES)[number];
+
+export const SUCCESS_CATEGORY_LABELS: Record<SuccessCategory, string> = {
+  full_relocation: "Full Relocation",
+  increased_investment: "Increased Investment",
+  increased_business_activity: "Increased Business Activity",
+  increased_uk_presence: "Increased UK Presence",
+  project_research_relocation: "Project/Research-based Relocation",
+  remain_in_uk: "Remain in UK",
+};
+
+export type ShortlistEntry = {
+  id: string;
+  candidateId: string;
+  stage: ShortlistStage;
+  priority: number | null;
+  successRag: Rag | null;
+  relationshipRag: Rag | null;
+  supportLevel: SupportLevel | null;
+  backgroundCheck: BackgroundCheck;
+  relationshipHolder: string | null;
+  accountManager: string | null;
+  leadSource: LeadSource;
+  nextStep: string | null;
+  originDate: string;
+  dataHubLink: string | null;
+  issueCategories: IssueCategory[];
+  issueDetails: string | null;
+  solutionOffered: string | null;
+  resolved: Resolved | null;
+  outcome: string | null;
+  successCategory: SuccessCategory | null;
+  closedAt: string | null;
+  failureReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type UpdateShortlistBody = Partial<
+  Omit<ShortlistEntry, "id" | "candidateId" | "createdAt" | "updatedAt">
+>;
+
+export type ShortlistItem = ShortlistEntry & { candidate: CandidateListItem };
+
+export type ShortlistSummary = {
+  total: number;
+  active: number;
+  converted: number;
+  byStage: Record<ShortlistStage, number>;
+  successRag: Record<Rag, number>;
+  relationshipRag: Record<Rag, number>;
+  bySource: Record<LeadSource, number>;
+  accountManagers: string[];
+  relationshipHolders: string[];
+};
+
+export const CANDIDATE_SOURCES = ["search", "manual", "inbound"] as const;
 export type CandidateSource = (typeof CANDIDATE_SOURCES)[number];
 
 export type LinkedInProfile = {
@@ -154,6 +396,32 @@ export type Resolution = {
   confidence: "strong" | "weak" | "none";
   matchedUrl: string | null;
   steps: string[];
+};
+
+export const INBOUND_INTENTS = ["relocate", "expand_business", "invest", "research", "exploring"] as const;
+export type InboundIntent = (typeof INBOUND_INTENTS)[number];
+
+export const INBOUND_INTENT_LABELS: Record<InboundIntent, string> = {
+  relocate: "Relocate to the UK myself",
+  expand_business: "Set up or expand a business in the UK",
+  invest: "Invest in the UK",
+  research: "Move my research to the UK",
+  exploring: "Just exploring",
+};
+
+export type InboundEnquiryBody = {
+  name: string;
+  email: string;
+  phone?: string;
+  organisation?: string;
+  role?: string;
+  profileUrl?: string;
+  country?: string;
+  category?: string;
+  sector?: string;
+  intent?: InboundIntent;
+  timeline?: string;
+  message?: string;
 };
 
 export type ManualCandidateBody = {
@@ -230,6 +498,7 @@ export type UkLinks = {
   links: { type: UkLinkType; detail: string }[];
   currentCountry: string | null;
   ukGovernmentLinks: string | null;
+  wealthEvidence?: string | null;
   evidence: string;
   citations: Citation[];
 };
@@ -328,6 +597,11 @@ export type CandidateListItem = {
   residenceRegion: ResidenceRegion | null;
   nationality: string | null;
   status: CandidateStatus;
+  outreachStatus: OutreachStatus;
+  shortlistStage: ShortlistStage | null;
+  netWorthBand: NetWorthBand | null;
+  netWorthUsd: number | null;
+  netWorthConfidence: NetWorth["confidence"] | null;
   overallScore: number | null;
   opennessScore: number | null;
   ukLinkScore: number | null;
@@ -348,6 +622,11 @@ export type CandidateDetail = CandidateListItem & {
   ukLinks: UkLinks | null;
   persona: PersonaAttributes | null;
   classification: Classification | null;
+  netWorth: NetWorth | null;
+  contact: ContactDetails | null;
+  outreachNote: string | null;
+  contactedAt: string | null;
+  shortlist: ShortlistEntry | null;
   score: CandidateScore | null;
   error: string | null;
   answers: InterviewAnswer[];
@@ -356,8 +635,9 @@ export type CandidateDetail = CandidateListItem & {
 export type SearchListItem = {
   id: string;
   name: string;
-  category: TalentCategory;
-  sector: SearchSector;
+  kind: SearchKind;
+  category: SearchCategoryChoice;
+  sector: SearchSectorChoice;
   region: string | null;
   query: string;
   numResults: number;
@@ -371,8 +651,8 @@ export type SearchListItem = {
 export type SearchDetail = SearchListItem & { candidates: CandidateListItem[] };
 
 export type CreateSearchBody = {
-  category: TalentCategory;
-  sector: SearchSector;
+  category: SearchCategoryChoice;
+  sector: SearchSectorChoice;
   region?: SearchRegion;
   customRegion?: string;
   query?: string;
@@ -388,6 +668,7 @@ export type ChatResponse = { reply: string };
 export type Stats = {
   candidates: number;
   scored: number;
+  actioned: number;
   searches: number;
   averageOpenness: number | null;
   byCategory: Record<TalentCategory, number>;

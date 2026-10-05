@@ -1,6 +1,13 @@
 import styled from "@emotion/styled";
 import { useState } from "react";
-import type { CandidateStatus, GttCriteria, ResidenceRegion, Sector, TalentCategory } from "@api-types";
+import type {
+  CandidateStatus,
+  GttCriteria,
+  OutreachStatus,
+  ResidenceRegion,
+  Sector,
+  TalentCategory,
+} from "@api-types";
 import SearchBar from "./UI/SearchBar";
 import FilterDropdown from "./FilterDropdown";
 import Button from "./UI/Button";
@@ -10,6 +17,8 @@ import {
   CANDIDATE_STATUS_LABELS,
   GTT_CRITERIA,
   GTT_CRITERIA_LABELS,
+  OUTREACH_STATUSES,
+  OUTREACH_STATUS_LABELS,
   RESIDENCE_REGIONS,
   RESIDENCE_REGION_LABELS,
   SECTORS,
@@ -33,7 +42,8 @@ function CandidateFilterBar({ filters, onChange, resultCount, isFetching }: Cand
     filters.sector ||
     filters.criteria ||
     filters.region ||
-    filters.status
+    filters.status ||
+    filters.outreach
   );
   const [searchInput, setSearchInput] = useState({ key: 0, seed: filters.q ?? "" });
 
@@ -84,6 +94,13 @@ function CandidateFilterBar({ filters, onChange, resultCount, isFetching }: Cand
         options={CANDIDATE_STATUSES.map((value) => ({ value, label: CANDIDATE_STATUS_LABELS[value] }))}
         onChange={(status) => onChange({ status })}
       />
+      <FilterDropdown<OutreachStatus>
+        label="Outreach"
+        allLabel="All outreach"
+        value={filters.outreach}
+        options={OUTREACH_STATUSES.map((value) => ({ value, label: OUTREACH_STATUS_LABELS[value] }))}
+        onChange={(outreach) => onChange({ outreach })}
+      />
       {hasFilters && (
         <Button
           size="sm"
@@ -97,6 +114,7 @@ function CandidateFilterBar({ filters, onChange, resultCount, isFetching }: Cand
               criteria: undefined,
               region: undefined,
               status: undefined,
+              outreach: undefined,
             });
           }}
         >

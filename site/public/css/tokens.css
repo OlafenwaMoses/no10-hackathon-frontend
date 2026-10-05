@@ -1,0 +1,133 @@
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("/fonts/gov/inter-latin.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("/fonts/gov/inter-latin-ext.woff2") format("woff2-variations");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Newsreader Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("/fonts/gov/newsreader-latin.woff2") format("woff2-variations");
+}
+
+@font-face {
+  font-family: "Newsreader Variable";
+  font-style: italic;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("/fonts/gov/newsreader-latin-italic.woff2") format("woff2-variations");
+}
+
+:root {
+  --font-body: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-display: "Newsreader Variable", Georgia, "Times New Roman", serif;
+  --font-serif: "Newsreader Variable", Georgia, "Times New Roman", serif;
+
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f2f6fc;
+  --color-surface-tint: #f5f8fe;
+  --color-text: #283241;
+  --color-heading: #0b1d33;
+  --color-text-muted: #556275;
+  --color-border: #e3e8f0;
+  --color-border-strong: #b4bdcb;
+
+  --color-primary: #0b1d33;
+  --color-primary-hover: #1d5fd1;
+  --color-primary-contrast: #ffffff;
+  --color-accent: #1d5fd1;
+  --color-accent-strong: #1747a6;
+  --color-accent-bright: #2f74ea;
+  --color-accent-soft: #e8f0fd;
+  --color-accent-line: #c5d8f8;
+  --color-accent-contrast: #ffffff;
+
+  --color-link: #1d5fd1;
+  --color-link-hover: #0b1d33;
+  --color-focus: #2563eb;
+  --color-focus-on-dark: #7cb7ff;
+  --color-success: #1f7a4d;
+  --color-success-soft: #e7f3ec;
+  --color-error: #b42318;
+
+  --color-header-bg: rgba(255, 255, 255, 0.94);
+
+  --color-hero-bg: #0b1d33;
+  --color-hero-deep: #071429;
+  --color-hero-royal: #1b4fae;
+  --color-hero-glow: #1f4f9e;
+  --color-hero-text: #ffffff;
+  --color-hero-muted: #bccadc;
+  --color-hero-accent: #7cb7ff;
+  --color-hero-border: rgba(255, 255, 255, 0.18);
+  --color-hero-surface: rgba(255, 255, 255, 0.07);
+  --color-hero-dot: rgba(164, 198, 255, 0.3);
+
+  --color-footer-bg: #071429;
+  --color-footer-text: #e8edf3;
+  --color-footer-muted: #a3b0c2;
+  --color-footer-border: rgba(255, 255, 255, 0.12);
+
+  --gradient-hero:
+    radial-gradient(55% 75% at 78% 42%, rgba(47, 116, 234, 0.5) 0%, rgba(27, 79, 174, 0.22) 45%, transparent 75%),
+    radial-gradient(40% 60% at 0% 100%, rgba(27, 79, 174, 0.28) 0%, transparent 70%),
+    linear-gradient(165deg, #0b1d33 0%, #0a1b38 55%, #0c2552 100%);
+  --gradient-feature:
+    radial-gradient(circle at 100% 0%, rgba(80, 150, 255, 0.32) 0%, rgba(80, 150, 255, 0) 55%),
+    linear-gradient(200deg, #1a4796 0%, #10306a 40%, #0b1d33 100%);
+  --gradient-contact:
+    radial-gradient(60% 140% at 100% 50%, rgba(124, 183, 255, 0.28) 0%, transparent 60%),
+    linear-gradient(110deg, #0b1d33 0%, #102f66 55%, #1b4fae 100%);
+  --gradient-tint: linear-gradient(180deg, #f5f8fe 0%, #e9f0fb 100%);
+  --gradient-tile: linear-gradient(140deg, #eef4ff 0%, #d6e5ff 100%);
+  --gradient-rule: linear-gradient(90deg, #0b1d33 0%, #1d5fd1 45%, #7cb7ff 100%);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 6px;
+
+  --shadow-sm: 0 1px 2px rgba(11, 29, 51, 0.06);
+  --shadow-md: 0 1px 2px rgba(11, 29, 51, 0.04), 0 4px 12px -6px rgba(11, 29, 51, 0.1);
+  --shadow-lg: 0 16px 32px -20px rgba(7, 20, 42, 0.3);
+  --shadow-accent: 0 1px 2px rgba(11, 29, 51, 0.04), 0 14px 28px -16px rgba(29, 95, 209, 0.35);
+
+  --heading-weight: 600;
+  --heading-tracking: -0.015em;
+  --display-weight: 450;
+  --display-tracking: -0.02em;
+
+  --govuk-template-background-colour: var(--color-bg);
+  --govuk-body-background-colour: var(--color-bg);
+  --govuk-text-colour: var(--color-text);
+  --govuk-secondary-text-colour: var(--color-text-muted);
+  --govuk-link-colour: var(--color-link);
+  --govuk-link-visited-colour: var(--color-link);
+  --govuk-link-hover-colour: var(--color-link-hover);
+  --govuk-link-active-colour: var(--color-link-hover);
+  --govuk-focus-colour: var(--color-focus);
+  --govuk-focus-text-colour: var(--color-heading);
+  --govuk-border-colour: var(--color-border);
+  --govuk-input-border-colour: var(--color-border-strong);
+  --govuk-brand-colour: var(--color-primary);
+  --govuk-error-colour: var(--color-error);
+  --govuk-success-colour: var(--color-success);
+  --govuk-surface-background-colour: var(--color-surface-alt);
+  --govuk-surface-border-colour: var(--color-border);
+  --govuk-hover-colour: var(--color-border);
+}

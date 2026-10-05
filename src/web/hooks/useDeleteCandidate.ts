@@ -15,6 +15,7 @@ export default function useDeleteCandidate() {
       void queryClient.invalidateQueries({ queryKey: ["stats"] });
       void queryClient.invalidateQueries({ queryKey: ["search"] });
       void queryClient.invalidateQueries({ queryKey: ["searches"] });
+      void queryClient.invalidateQueries({ queryKey: ["shortlist"] });
     },
   });
 

@@ -11,9 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppShortlistRouteImport } from './routes/_app.shortlist'
 import { Route as AppCandidatesCandidateIdRouteImport } from './routes/_app.candidates.$candidateId'
 import { Route as AppSearchesIndexRouteImport } from './routes/_app.searches.index'
 import { Route as AppSearchesSearchIdRouteImport } from './routes/_app.searches.$searchId'
+import { Route as AppCandidatesCandidateIdIndexRouteImport } from './routes/_app.candidates.$candidateId.index'
+import { Route as AppCandidatesCandidateIdInterviewRouteImport } from './routes/_app.candidates.$candidateId.interview'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -22,6 +25,11 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppShortlistRoute = AppShortlistRouteImport.update({
+  id: '/shortlist',
+  path: '/shortlist',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCandidatesCandidateIdRoute =
@@ -40,40 +48,75 @@ const AppSearchesSearchIdRoute = AppSearchesSearchIdRouteImport.update({
   path: '/searches/$searchId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCandidatesCandidateIdIndexRoute =
+  AppCandidatesCandidateIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AppCandidatesCandidateIdRoute,
+  } as any)
+const AppCandidatesCandidateIdInterviewRoute =
+  AppCandidatesCandidateIdInterviewRouteImport.update({
+    id: '/interview',
+    path: '/interview',
+    getParentRoute: () => AppCandidatesCandidateIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
-  '/candidates/$candidateId': typeof AppCandidatesCandidateIdRoute
+  '/shortlist': typeof AppShortlistRoute
+  '/candidates/$candidateId': typeof AppCandidatesCandidateIdRouteWithChildren
   '/searches/$searchId': typeof AppSearchesSearchIdRoute
   '/searches/': typeof AppSearchesIndexRoute
+  '/candidates/$candidateId/interview': typeof AppCandidatesCandidateIdInterviewRoute
+  '/candidates/$candidateId/': typeof AppCandidatesCandidateIdIndexRoute
 }
 export interface FileRoutesByTo {
+  '/shortlist': typeof AppShortlistRoute
   '/': typeof AppIndexRoute
-  '/candidates/$candidateId': typeof AppCandidatesCandidateIdRoute
   '/searches/$searchId': typeof AppSearchesSearchIdRoute
   '/searches': typeof AppSearchesIndexRoute
+  '/candidates/$candidateId/interview': typeof AppCandidatesCandidateIdInterviewRoute
+  '/candidates/$candidateId': typeof AppCandidatesCandidateIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/_app/shortlist': typeof AppShortlistRoute
   '/_app/': typeof AppIndexRoute
-  '/_app/candidates/$candidateId': typeof AppCandidatesCandidateIdRoute
+  '/_app/candidates/$candidateId': typeof AppCandidatesCandidateIdRouteWithChildren
   '/_app/searches/$searchId': typeof AppSearchesSearchIdRoute
   '/_app/searches/': typeof AppSearchesIndexRoute
+  '/_app/candidates/$candidateId/interview': typeof AppCandidatesCandidateIdInterviewRoute
+  '/_app/candidates/$candidateId/': typeof AppCandidatesCandidateIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/candidates/$candidateId' | '/searches/$searchId' | '/searches/'
+    | '/'
+    | '/shortlist'
+    | '/candidates/$candidateId'
+    | '/searches/$searchId'
+    | '/searches/'
+    | '/candidates/$candidateId/interview'
+    | '/candidates/$candidateId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/candidates/$candidateId' | '/searches/$searchId' | '/searches'
+  to:
+    | '/shortlist'
+    | '/'
+    | '/searches/$searchId'
+    | '/searches'
+    | '/candidates/$candidateId/interview'
+    | '/candidates/$candidateId'
   id:
     | '__root__'
     | '/_app'
+    | '/_app/shortlist'
     | '/_app/'
     | '/_app/candidates/$candidateId'
     | '/_app/searches/$searchId'
     | '/_app/searches/'
+    | '/_app/candidates/$candidateId/interview'
+    | '/_app/candidates/$candidateId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,6 +137,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/shortlist': {
+      id: '/_app/shortlist'
+      path: '/shortlist'
+      fullPath: '/shortlist'
+      preLoaderRoute: typeof AppShortlistRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/candidates/$candidateId': {
@@ -117,19 +167,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSearchesSearchIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/candidates/$candidateId/': {
+      id: '/_app/candidates/$candidateId/'
+      path: '/'
+      fullPath: '/candidates/$candidateId/'
+      preLoaderRoute: typeof AppCandidatesCandidateIdIndexRouteImport
+      parentRoute: typeof AppCandidatesCandidateIdRoute
+    }
+    '/_app/candidates/$candidateId/interview': {
+      id: '/_app/candidates/$candidateId/interview'
+      path: '/interview'
+      fullPath: '/candidates/$candidateId/interview'
+      preLoaderRoute: typeof AppCandidatesCandidateIdInterviewRouteImport
+      parentRoute: typeof AppCandidatesCandidateIdRoute
+    }
   }
 }
 
+interface AppCandidatesCandidateIdRouteChildren {
+  AppCandidatesCandidateIdInterviewRoute: typeof AppCandidatesCandidateIdInterviewRoute
+  AppCandidatesCandidateIdIndexRoute: typeof AppCandidatesCandidateIdIndexRoute
+}
+
+const AppCandidatesCandidateIdRouteChildren: AppCandidatesCandidateIdRouteChildren =
+  {
+    AppCandidatesCandidateIdInterviewRoute:
+      AppCandidatesCandidateIdInterviewRoute,
+    AppCandidatesCandidateIdIndexRoute: AppCandidatesCandidateIdIndexRoute,
+  }
+
+const AppCandidatesCandidateIdRouteWithChildren =
+  AppCandidatesCandidateIdRoute._addFileChildren(
+    AppCandidatesCandidateIdRouteChildren,
+  )
+
 interface AppRouteChildren {
+  AppShortlistRoute: typeof AppShortlistRoute
   AppIndexRoute: typeof AppIndexRoute
-  AppCandidatesCandidateIdRoute: typeof AppCandidatesCandidateIdRoute
+  AppCandidatesCandidateIdRoute: typeof AppCandidatesCandidateIdRouteWithChildren
   AppSearchesSearchIdRoute: typeof AppSearchesSearchIdRoute
   AppSearchesIndexRoute: typeof AppSearchesIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppShortlistRoute: AppShortlistRoute,
   AppIndexRoute: AppIndexRoute,
-  AppCandidatesCandidateIdRoute: AppCandidatesCandidateIdRoute,
+  AppCandidatesCandidateIdRoute: AppCandidatesCandidateIdRouteWithChildren,
   AppSearchesSearchIdRoute: AppSearchesSearchIdRoute,
   AppSearchesIndexRoute: AppSearchesIndexRoute,
 }

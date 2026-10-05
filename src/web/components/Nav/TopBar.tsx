@@ -1,9 +1,11 @@
 import styled from "@emotion/styled";
 import { createLink, useLocation, useParams } from "@tanstack/react-router";
-import { PlusIcon, UserPlusIcon } from "@phosphor-icons/react";
+import { FileArrowUpIcon, PlusIcon, UserPlusIcon } from "@phosphor-icons/react";
 import Button from "../UI/Button";
 import NewSearchModal from "../NewSearchModal";
 import AddPersonModal from "../AddPersonModal";
+import ImportModal from "../Import/ImportModal";
+import ShortlistExportButton from "../Shortlist/ShortlistExportButton";
 import { openModal } from "../ModalManager";
 import useCandidate from "../../hooks/useCandidate";
 import useSearchRun from "../../hooks/useSearchRun";
@@ -19,10 +21,14 @@ function TopBar() {
   const { search } = useSearchRun(searchId);
 
   const onSearches = pathname.startsWith("/searches");
+  const onShortlist = pathname.startsWith("/shortlist");
   const section = onSearches
     ? { to: "/searches" as const, label: "Searches" }
-    : { to: "/" as const, label: "Talent database" };
+    : onShortlist
+      ? { to: "/shortlist" as const, label: "Shortlist" }
+      : { to: "/" as const, label: "Talent database" };
   const detailLabel = candidateId ? (candidate?.name ?? "Candidate") : searchId ? (search?.name ?? "Search") : null;
+  const onInterview = !!candidateId && pathname.endsWith("/interview");
   const showNewSearch = pathname === "/" || pathname === "/searches";
 
   return (
@@ -32,14 +38,33 @@ function TopBar() {
           <>
             <CrumbLink to={section.to}>{section.label}</CrumbLink>
             <Slash>/</Slash>
-            <Current aria-current="page">{detailLabel}</Current>
+            {onInterview && candidateId ? (
+              <>
+                <CrumbLink to="/candidates/$candidateId" params={{ candidateId }}>
+                  {detailLabel}
+                </CrumbLink>
+                <Slash>/</Slash>
+                <Current aria-current="page">Interview</Current>
+              </>
+            ) : (
+              <Current aria-current="page">{detailLabel}</Current>
+            )}
           </>
         ) : (
           <Current aria-current="page">{section.label}</Current>
         )}
       </Crumbs>
+      {onShortlist && (
+        <Actions>
+          <ShortlistExportButton />
+        </Actions>
+      )}
       {showNewSearch && (
         <Actions>
+          <Button size="sm" onClick={() => openModal(<ImportModal />)}>
+            <FileArrowUpIcon size={14} weight="bold" />
+            Import
+          </Button>
           <Button size="sm" onClick={() => openModal(<AddPersonModal />)}>
             <UserPlusIcon size={14} weight="bold" />
             Add person

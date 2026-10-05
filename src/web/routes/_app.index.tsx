@@ -1,13 +1,21 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import styled from "@emotion/styled";
-import { MagnifyingGlassIcon, PlusIcon, UserPlusIcon } from "@phosphor-icons/react";
-import { CANDIDATE_STATUSES, GTT_CRITERIA, RESIDENCE_REGIONS, SECTORS, TALENT_CATEGORIES } from "../lib/labels";
+import { FileArrowUpIcon, MagnifyingGlassIcon, PlusIcon, UserPlusIcon } from "@phosphor-icons/react";
+import {
+  CANDIDATE_STATUSES,
+  GTT_CRITERIA,
+  OUTREACH_STATUSES,
+  RESIDENCE_REGIONS,
+  SECTORS,
+  TALENT_CATEGORIES,
+} from "../lib/labels";
 import StatTiles from "../components/StatTiles";
 import CandidateFilterBar from "../components/CandidateFilterBar";
 import CandidateTable from "../components/CandidateTable";
 import EmptyState from "../components/EmptyState";
 import NewSearchModal from "../components/NewSearchModal";
 import AddPersonModal from "../components/AddPersonModal";
+import ImportModal from "../components/Import/ImportModal";
 import Button from "../components/UI/Button";
 import { openModal } from "../components/ModalManager";
 import { PageInner, PageScroll } from "../components/UI/PageStyles";
@@ -24,6 +32,7 @@ export const Route = createFileRoute("/_app/")({
     criteria: parseEnum(GTT_CRITERIA, search.criteria),
     region: parseEnum(RESIDENCE_REGIONS, search.region),
     status: parseEnum(CANDIDATE_STATUSES, search.status),
+    outreach: parseEnum(OUTREACH_STATUSES, search.outreach),
   }),
 });
 
@@ -38,7 +47,8 @@ function RouteComponent() {
     filters.sector ||
     filters.criteria ||
     filters.region ||
-    filters.status
+    filters.status ||
+    filters.outreach
   );
 
   const updateFilters = (next: Partial<CandidateFilters>) =>
@@ -68,9 +78,13 @@ function RouteComponent() {
               <EmptyState
                 icon={MagnifyingGlassIcon}
                 title="No talent yet"
-                description="Start a search to discover founders, investors and researchers, or add someone you already know about. We check their UK links and interview an AI persona of each one."
+                description="Start a search to discover founders, investors and researchers, add someone you already know about, or import a spreadsheet such as the Taskforce Master Tracker. We check their UK links and interview an AI persona of each one."
                 action={
                   <EmptyActions>
+                    <Button onClick={() => openModal(<ImportModal />)}>
+                      <FileArrowUpIcon size={14} weight="bold" />
+                      Import spreadsheet
+                    </Button>
                     <Button onClick={() => openModal(<AddPersonModal />)}>
                       <UserPlusIcon size={14} weight="bold" />
                       Add person

@@ -1,5 +1,13 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import type { CandidateListItem, CandidateStatus, GttCriteria, ResidenceRegion, Sector, TalentCategory } from "@api-types";
+import type {
+  CandidateListItem,
+  CandidateStatus,
+  GttCriteria,
+  OutreachStatus,
+  ResidenceRegion,
+  Sector,
+  TalentCategory,
+} from "@api-types";
 import { apiFetch } from "../lib/api";
 import { isCandidateProcessing } from "../lib/status";
 
@@ -10,6 +18,7 @@ export type CandidateFilters = {
   criteria?: GttCriteria;
   region?: ResidenceRegion;
   status?: CandidateStatus;
+  outreach?: OutreachStatus;
   searchId?: string;
 };
 

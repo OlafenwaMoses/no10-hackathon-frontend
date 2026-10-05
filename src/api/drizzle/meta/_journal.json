@@ -8,6 +8,27 @@
       "when": 1791196691326,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791198104372,
+      "tag": "0001_outreach_contact_net_worth",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791198477900,
+      "tag": "0002_search_kind",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791198574632,
+      "tag": "0003_shortlist",
+      "breakpoints": true
     }
   ]
 }

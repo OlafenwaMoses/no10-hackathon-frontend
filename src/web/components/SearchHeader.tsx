@@ -1,9 +1,10 @@
 import styled from "@emotion/styled";
-import { GlobeHemisphereWestIcon, WarningCircleIcon } from "@phosphor-icons/react";
+import { FileXlsIcon, GlobeHemisphereWestIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import type { SearchDetail } from "@api-types";
-import CategoryTag from "./CategoryTag";
-import SectorTag from "./SectorTag";
+import SearchCategoryTag from "./SearchCategoryTag";
+import SearchSectorTag from "./SearchSectorTag";
 import SearchStatusPill from "./SearchStatusPill";
+import ImportedTag from "./ImportedTag";
 import ProgressBar from "./ProgressBar";
 import { Heading } from "../lib/utilityComponents";
 import { Eyebrow } from "./UI/PageStyles";
@@ -11,33 +12,50 @@ import formatRelativeTime from "../lib/formatRelativeTime";
 import { isSearchActive } from "../lib/status";
 
 function SearchHeader({ search }: { search: SearchDetail }) {
-  const target = Math.max(search.candidateCount, search.numResults);
+  const isImport = search.kind === "import";
+  const target = isImport ? Math.max(search.candidateCount, 1) : Math.max(search.candidateCount, search.numResults);
 
   return (
     <Card>
       <Top>
         <Titles>
           <Heading h4>{search.name}</Heading>
-          <Meta>
-            <CategoryTag category={search.category} />
-            <SectorTag sector={search.sector} />
-            <MetaItem>
-              <GlobeHemisphereWestIcon size={14} />
-              {search.region ?? "Global"}
-            </MetaItem>
-            <MetaItem>Started {formatRelativeTime(search.createdAt)}</MetaItem>
-          </Meta>
+          {isImport ? (
+            <Meta>
+              <ImportedTag />
+              <MetaItem>
+                <FileXlsIcon size={14} />
+                {search.query}
+              </MetaItem>
+              <MetaItem>{formatRelativeTime(search.createdAt)}</MetaItem>
+            </Meta>
+          ) : (
+            <Meta>
+              <SearchCategoryTag category={search.category} />
+              <SearchSectorTag sector={search.sector} />
+              <MetaItem>
+                <GlobeHemisphereWestIcon size={14} />
+                {search.region ?? "Global"}
+              </MetaItem>
+              <MetaItem>Started {formatRelativeTime(search.createdAt)}</MetaItem>
+            </Meta>
+          )}
         </Titles>
         <SearchStatusPill status={search.status} />
       </Top>
-      <QueryBlock>
-        <Eyebrow>Exa query</Eyebrow>
-        <QueryText>{search.query}</QueryText>
-      </QueryBlock>
+      {!isImport && (
+        <QueryBlock>
+          <Eyebrow>Exa query</Eyebrow>
+          <QueryText>{search.query}</QueryText>
+        </QueryBlock>
+      )}
       <ProgressRow>
         <ProgressBar value={search.scoredCount} max={target} active={isSearchActive(search.status)} />
         <ProgressStats>
-          <strong>{search.scoredCount}</strong> scored · {search.candidateCount} found · {search.numResults} requested
+          <strong>{search.scoredCount}</strong> scored ·{" "}
+          {isImport
+            ? `${search.candidateCount} imported`
+            : `${search.candidateCount} found · ${search.numResults} requested`}
         </ProgressStats>
       </ProgressRow>
       {search.error && (

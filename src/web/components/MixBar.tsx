@@ -46,4 +46,5 @@ const Segment = styled.span(({ theme }) => ({
   "&[data-tone='rose']": { backgroundColor: theme.toneRoseFg },
   "&[data-tone='violet']": { backgroundColor: theme.toneVioletFg },
   "&[data-tone='teal']": { backgroundColor: theme.toneTealFg },
+  "&[data-tone='danger']": { backgroundColor: theme.danger },
 }));

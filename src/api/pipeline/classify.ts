@@ -1,6 +1,8 @@
 import {
   GTT_CRITERIA,
   GTT_CRITERIA_LABELS,
+  NET_WORTH_BANDS,
+  NET_WORTH_BAND_LABELS,
   RESIDENCE_REGIONS,
   RESIDENCE_REGION_LABELS,
   SECTORS,
@@ -8,6 +10,8 @@ import {
   TALENT_CATEGORIES,
   TALENT_CATEGORY_LABELS,
   type Classification,
+  type NetWorth,
+  type NetWorthBand,
   type PersonaAttributes,
   type Sector,
   type TalentCategory,
@@ -41,6 +45,14 @@ ${optionList(RESIDENCE_REGIONS, RESIDENCE_REGION_LABELS)}
 
 7. rationale: one sentence explaining the classification.
 
+8. Net worth: estimate the person's personal net worth in USD.
+- netWorthBand: one of
+${optionList(NET_WORTH_BANDS, NET_WORTH_BAND_LABELS)}
+- netWorthEstimateUsd: your point estimate in USD as a plain number, or 0 when the band is unknown.
+- netWorthConfidence: high only with sourced figures (rich lists, disclosed exit proceeds or stakes); medium when inferred from concrete facts such as founding a company with a known valuation or a senior role at a large public company; low when inferred only from seniority and sector.
+- netWorthBasis: one sentence on what the estimate rests on.
+Use the wealth evidence when present. Founders of venture-backed companies usually hold meaningful equity; weigh company valuation, funding raised, exits and years in senior roles. Use unknown only when there is genuinely nothing to go on. UHNWI means $30m or more.
+
 Base everything on the evidence. The search that found them is only a hint; correct it when the evidence says otherwise.`;
 
 export async function classifyCandidate(
@@ -52,7 +64,7 @@ export async function classifyCandidate(
     searchCategory: TalentCategory;
     searchSector: Sector;
   },
-): Promise<Classification> {
+): Promise<{ classification: Classification; netWorth: NetWorth }> {
   const prompt = `## Found by a search for
 ${TALENT_CATEGORY_LABELS[input.searchCategory]} · ${SECTOR_LABELS[input.searchSector]}
 
@@ -63,15 +75,38 @@ ${input.profileText}
 ${renderPersonaProfile(input.persona)}
 
 ## Current country (from research)
-${input.ukLinks.currentCountry ?? "Unknown"}`;
+${input.ukLinks.currentCountry ?? "Unknown"}
 
-  const result = await generateJson<Omit<Classification, "nationality"> & { nationality: string }>({
+## Wealth evidence (from research)
+${input.ukLinks.wealthEvidence || "None found"}`;
+
+  const result = await generateJson<
+    Omit<Classification, "nationality"> & {
+      nationality: string;
+      netWorthBand: NetWorthBand;
+      netWorthEstimateUsd: number;
+      netWorthConfidence: NetWorth["confidence"];
+      netWorthBasis: string;
+    }
+  >({
     env,
     system: SYSTEM_PROMPT,
     prompt,
     schema: {
       type: "object",
-      required: ["category", "sector", "subSector", "criteria", "residenceRegion", "nationality", "rationale"],
+      required: [
+        "category",
+        "sector",
+        "subSector",
+        "criteria",
+        "residenceRegion",
+        "nationality",
+        "rationale",
+        "netWorthBand",
+        "netWorthEstimateUsd",
+        "netWorthConfidence",
+        "netWorthBasis",
+      ],
       properties: {
         category: { type: "string", enum: TALENT_CATEGORIES },
         sector: { type: "string", enum: SECTORS },
@@ -80,9 +115,23 @@ ${input.ukLinks.currentCountry ?? "Unknown"}`;
         residenceRegion: { type: "string", enum: RESIDENCE_REGIONS },
         nationality: { type: "string" },
         rationale: { type: "string" },
+        netWorthBand: { type: "string", enum: NET_WORTH_BANDS },
+        netWorthEstimateUsd: { type: "number" },
+        netWorthConfidence: { type: "string", enum: ["high", "medium", "low"] },
+        netWorthBasis: { type: "string" },
       },
     },
   });
 
-  return { ...result, nationality: result.nationality.trim() || null };
+  const { netWorthBand, netWorthEstimateUsd, netWorthConfidence, netWorthBasis, ...classification } = result;
+  const known = netWorthBand !== "unknown" && netWorthEstimateUsd > 0;
+  return {
+    classification: { ...classification, nationality: classification.nationality.trim() || null },
+    netWorth: {
+      band: netWorthBand,
+      estimateUsd: known ? Math.round(netWorthEstimateUsd) : null,
+      confidence: netWorthConfidence,
+      basis: netWorthBasis.trim(),
+    },
+  };
 }

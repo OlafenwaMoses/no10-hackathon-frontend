@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { asc, eq } from "drizzle-orm";
-import { candidates, interviewAnswers, searches } from "../../db/schema";
+import { candidates, interviewAnswers, searches, shortlistEntries } from "../../db/schema";
 import { toCandidateListItem } from "../../lib/candidate-list-item";
 import type { CandidateDetail } from "../../types";
 import type { AppEnv } from "../../index";
@@ -10,9 +10,10 @@ export async function get(c: Context<AppEnv, "/:candidateId">) {
   const candidateId = c.req.param("candidateId");
 
   const [row] = await db
-    .select({ candidate: candidates, searchName: searches.name })
+    .select({ candidate: candidates, searchName: searches.name, shortlist: shortlistEntries })
     .from(candidates)
     .leftJoin(searches, eq(searches.id, candidates.searchId))
+    .leftJoin(shortlistEntries, eq(shortlistEntries.candidateId, candidates.id))
     .where(eq(candidates.id, candidateId));
   if (!row) return c.json({ error: "Candidate not found" }, 404);
 
@@ -24,7 +25,8 @@ export async function get(c: Context<AppEnv, "/:candidateId">) {
 
   const { candidate } = row;
   const detail: CandidateDetail = {
-    ...toCandidateListItem(candidate),
+    ...toCandidateListItem(candidate, row.shortlist?.stage ?? null),
+    shortlist: row.shortlist,
     searchId: candidate.searchId,
     searchName: row.searchName,
     entity: candidate.entity,
@@ -36,6 +38,10 @@ export async function get(c: Context<AppEnv, "/:candidateId">) {
     ukLinks: candidate.ukLinks,
     persona: candidate.persona,
     classification: candidate.classification,
+    netWorth: candidate.netWorth,
+    contact: candidate.contact,
+    outreachNote: candidate.outreachNote,
+    contactedAt: candidate.contactedAt,
     score: candidate.score,
     error: candidate.error,
     answers: answers.map((a) => ({

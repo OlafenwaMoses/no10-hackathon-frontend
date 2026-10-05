@@ -43,11 +43,21 @@ function RouteComponent() {
           empty={
             <EmptyState
               icon={MagnifyingGlassIcon}
-              title={search && isSearchActive(search.status) ? "Discovering people…" : "No candidates"}
-              description={
+              title={
                 search && isSearchActive(search.status)
-                  ? "Exa is searching for matching people. They'll appear here as soon as they're found."
-                  : "This search didn't return anyone. Try a broader query or region."
+                  ? search.kind === "import"
+                    ? "Importing people…"
+                    : "Discovering people…"
+                  : "No candidates"
+              }
+              description={
+                search?.kind === "import"
+                  ? isSearchActive(search.status)
+                    ? "Adding people from the spreadsheet. They'll appear here as soon as they're saved."
+                    : "No new people were imported from this spreadsheet."
+                  : search && isSearchActive(search.status)
+                    ? "Exa is searching for matching people. They'll appear here as soon as they're found."
+                    : "This search didn't return anyone. Try a broader query or region."
               }
             />
           }

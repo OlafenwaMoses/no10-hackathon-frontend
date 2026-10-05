@@ -1,16 +1,9 @@
 import styled from "@emotion/styled";
 import type { Stats } from "@api-types";
-import {
-  RESIDENCE_REGIONS,
-  RESIDENCE_REGION_LABELS,
-  SECTORS,
-  SECTOR_LABELS,
-  TALENT_CATEGORIES,
-  TALENT_CATEGORY_LABELS,
-} from "../lib/labels";
+import { RESIDENCE_REGIONS, RESIDENCE_REGION_LABELS, SECTORS, SECTOR_LABELS } from "../lib/labels";
 import StatTile from "./StatTile";
 import MixBar from "./MixBar";
-import { CATEGORY_TONES, REGION_TONES } from "../lib/tones";
+import { REGION_TONES } from "../lib/tones";
 import { SCORE_BAND_LABELS, scoreBand, toPercent } from "../lib/scores";
 
 type StatTilesProps = {
@@ -19,7 +12,7 @@ type StatTilesProps = {
 };
 
 function StatTiles({ stats, isLoading }: StatTilesProps) {
-  const scoredShare = stats && stats.candidates > 0 ? (stats.scored / stats.candidates) * 100 : 0;
+  const actionedShare = stats && stats.candidates > 0 ? (stats.actioned / stats.candidates) * 100 : 0;
   const topSector = stats
     ? [...SECTORS].sort((a, b) => (stats.bySector[b] ?? 0) - (stats.bySector[a] ?? 0))[0]
     : undefined;
@@ -35,27 +28,21 @@ function StatTiles({ stats, isLoading }: StatTilesProps) {
         label="Candidates"
         value={stats?.candidates ?? 0}
         isLoading={isLoading}
+        footer={stats && `${stats.scored} fully assessed`}
+      />
+      <StatTile
+        label="Actioned"
+        value={stats?.actioned ?? 0}
+        isLoading={isLoading}
         footer={
-          stats && (
-            <MixBar
-              segments={TALENT_CATEGORIES.map((category) => ({
-                key: category,
-                label: TALENT_CATEGORY_LABELS[category],
-                count: stats.byCategory[category] ?? 0,
-                tone: CATEGORY_TONES[category],
-              }))}
-            />
-          )
+          stats &&
+          (stats.actioned > 0
+            ? `${Math.round(actionedShare)}% contacted by an officer`
+            : "No one contacted yet")
         }
       />
       <StatTile
-        label="Scored"
-        value={stats?.scored ?? 0}
-        isLoading={isLoading}
-        footer={stats && `${Math.round(scoredShare)}% of the database fully assessed`}
-      />
-      <StatTile
-        label="Average openness to the UK"
+        label="Average openness"
         value={stats?.averageOpenness == null ? "—" : Math.round(toPercent(stats.averageOpenness))}
         suffix={stats?.averageOpenness == null ? undefined : "/ 100"}
         isLoading={isLoading}
