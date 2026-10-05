@@ -1,5 +1,7 @@
 # Running the dashboard with the talent agent API
 
+> On this `vercel` branch the dashboard runs on Vercel and calls the deployed talent API. See [VERCEL.md](VERCEL.md). The Docker Compose steps below are for the `talent-api-integration` branch, which still runs on Cloudflare's local runtime.
+
 This dashboard can find people with the talent agent API instead of Exa people search. The API is the `service/` app in the NO10-Fellows repo, which this folder sits inside. When `TALENT_API_URL` is set, a search from the dashboard goes like this:
 
 1. **The search goes to the talent API.** It sends the search form's fields (`category`, `sector`, `region`, `customRegion`, `query` and `numResults`).
