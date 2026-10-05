@@ -1,0 +1,5 @@
+DATABASE_URL=postgresql://user:password@host:5432/postgres?sslmode=require
+EXA_API_KEY=
+OPENAI_API_KEY=
+APP_PASSWORD=
+REVERSE_CONTACT_API_KEY=
