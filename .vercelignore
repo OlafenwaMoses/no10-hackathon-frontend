@@ -1,0 +1,7 @@
+.dev.vars
+.env*
+.output
+.nitro
+.workflow-data
+node_modules
+site

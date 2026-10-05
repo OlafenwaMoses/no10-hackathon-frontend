@@ -11,7 +11,7 @@
     "lib": ["ESNext"],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
-    "types": ["./worker-configuration.d.ts"]
+    "types": ["node"]
   },
   "include": ["src/api"],
   "exclude": []

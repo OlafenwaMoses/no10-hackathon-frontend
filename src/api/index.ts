@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
+import type { Bindings } from "./env";
 import { withDb, type Database } from "./lib/db";
 import { withPassword } from "./lib/password";
 import { withQueryParams, type QueryParamsFn } from "./lib/query-params";
@@ -9,11 +10,8 @@ import stats from "./routes/stats";
 import shortlist from "./routes/shortlist";
 import inbound from "./routes/inbound";
 
-export { SearchWorkflow } from "./workflows/search-workflow";
-export { CandidateWorkflow } from "./workflows/candidate-workflow";
-
 export type AppEnv = {
-  Bindings: CloudflareBindings;
+  Bindings: Bindings;
   Variables: {
     db: Database;
     queryParams: QueryParamsFn;
@@ -46,10 +44,4 @@ app.route("/stats", stats);
 app.route("/shortlist", shortlist);
 app.route("/inbound", inbound);
 
-export default {
-  fetch(request, env, ctx) {
-    const { pathname } = new URL(request.url);
-    if (pathname === "/api" || pathname.startsWith("/api/")) return app.fetch(request, env, ctx);
-    return env.ASSETS.fetch(request);
-  },
-} satisfies ExportedHandler<CloudflareBindings>;
+export default app;

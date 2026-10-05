@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
-import { cloudflare } from "@cloudflare/vite-plugin";
+import { nitro } from "nitro/vite";
+import { workflow } from "workflow/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import svgr from "vite-plugin-svgr";
 import path from "path";
@@ -37,7 +38,7 @@ export default defineConfig({
     target: "esnext",
     modulePreload: { polyfill: false },
   },
-  esbuild: {
+  oxc: {
     target: "esnext",
   },
   plugins: [
@@ -59,11 +60,12 @@ export default defineConfig({
     svgr({
       svgrOptions: { svgo: false },
     }),
-    cloudflare(),
+    nitro({ routes: { "/api/**": "./src/api/server.ts" } }),
+    workflow({ dirs: ["src/api/workflows"] }),
   ],
   resolve: {
     alias: {
-      "@api-types": path.resolve(__dirname, "src/api/types.ts"),
+      "@api-types": path.resolve(import.meta.dirname, "src/api/types.ts"),
     },
   },
 });

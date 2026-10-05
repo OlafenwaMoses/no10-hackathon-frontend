@@ -46,7 +46,7 @@ async function rcRequest<T>(apiKey: string, path: string, init?: { body: unknown
     body: init ? JSON.stringify(init.body) : undefined,
   });
   if (!response.ok) throw new Error(`Reverse Contact ${path} failed (${response.status}): ${(await response.text()).slice(0, 500)}`);
-  const payload: RcEnvelope<T> = await response.json();
+  const payload = (await response.json()) as RcEnvelope<T>;
   return payload.success ? (payload.data ?? null) : null;
 }
 

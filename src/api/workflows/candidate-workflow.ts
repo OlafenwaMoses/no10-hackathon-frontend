@@ -1,182 +1,220 @@
-import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from "cloudflare:workers";
-import { NonRetryableError } from "cloudflare:workflows";
 import { and, eq, ne } from "drizzle-orm";
+import { FatalError } from "workflow";
 import { candidates, interviewAnswers } from "../db/schema";
+import { readEnv } from "../env";
 import { withDatabase, type Database } from "../lib/db-client";
+import { withBackoff } from "../lib/with-backoff";
+import { classifyCandidate } from "../pipeline/classify";
 import { enrichUkLinks } from "../pipeline/enrich";
 import { interviewPersona, type InterviewAnswerRow } from "../pipeline/interview";
 import { buildPersona } from "../pipeline/persona";
-import { classifyCandidate } from "../pipeline/classify";
 import { renderProfileText } from "../pipeline/profile-text";
+import { buildInterviewQuestions, type InterviewQuestion } from "../pipeline/questions";
 import { resolveManualCandidate } from "../pipeline/resolve";
-import { buildInterviewQuestions } from "../pipeline/questions";
 import { errorMessage } from "../pipeline/retry";
 import { scoreCandidate, ukLinkScore } from "../pipeline/score";
+import type { PersonaAttributes, Sector, TalentCategory, UkLinks } from "../types";
 
 export type CandidateWorkflowParams = { candidateId: string };
 
-const STEP_CONFIG = {
-  retries: { limit: 3, delay: "10 seconds", backoff: "exponential" },
-  timeout: "5 minutes",
-} as const;
+type Enriched = {
+  ukLinks: UkLinks;
+  profileText: string;
+  category: TalentCategory;
+  sector: Sector;
+};
 
-export class CandidateWorkflow extends WorkflowEntrypoint<CloudflareBindings, CandidateWorkflowParams> {
-  private db<T>(fn: (db: Database) => Promise<T>) {
-    return withDatabase(this.env.DATABASE_URL, fn);
-  }
+function db<T>(fn: (db: Database) => Promise<T>) {
+  return withDatabase(readEnv().DATABASE_URL, fn);
+}
 
-  async run(event: WorkflowEvent<CandidateWorkflowParams>, step: WorkflowStep) {
-    const { candidateId } = event.payload;
+async function resolveCandidate(candidateId: string) {
+  "use step";
+  return withBackoff(async () => {
+    const [candidate] = await db((db) => db.select().from(candidates).where(eq(candidates.id, candidateId)));
+    if (!candidate) throw new FatalError(`Candidate ${candidateId} not found`);
+    if (candidate.source === "search") return false;
+    if (candidate.resolution && candidate.resolution.method !== "manual_only") return false;
 
-    try {
-      await step.do("resolve", STEP_CONFIG, async () => {
-        const [candidate] = await this.db((db) => db.select().from(candidates).where(eq(candidates.id, candidateId)));
-        if (!candidate) throw new NonRetryableError(`Candidate ${candidateId} not found`);
-        if (candidate.source === "search") return false;
-        if (candidate.resolution && candidate.resolution.method !== "manual_only") return false;
-
-        await this.db((db) =>
-          db.update(candidates).set({ status: "resolving", error: null }).where(eq(candidates.id, candidateId)),
-        );
-        const resolved = await resolveManualCandidate(this.env, candidate);
-        await this.db(async (db) => {
-          let profileUrl = resolved.profileUrl;
-          if (profileUrl && profileUrl !== candidate.profileUrl) {
-            const [existing] = await db
-              .select({ id: candidates.id })
-              .from(candidates)
-              .where(and(eq(candidates.profileUrl, profileUrl), ne(candidates.id, candidateId)));
-            if (existing) {
-              resolved.resolution.steps.push(`Matched profile ${profileUrl} is already in the database as another candidate`);
-              profileUrl = candidate.profileUrl;
-            }
-          }
-          await db
-            .update(candidates)
-            .set({ ...resolved, profileUrl })
-            .where(eq(candidates.id, candidateId));
-        });
-        return true;
-      });
-
-      const enriched = await step.do("enrich", STEP_CONFIG, async () => {
-        const candidate = await this.db(async (db) => {
-          await db.update(candidates).set({ status: "enriching", error: null }).where(eq(candidates.id, candidateId));
-          const [row] = await db.select().from(candidates).where(eq(candidates.id, candidateId));
-          return row;
-        });
-        if (!candidate) throw new NonRetryableError(`Candidate ${candidateId} not found`);
-
-        const ukLinks = await enrichUkLinks(this.env.EXA_API_KEY, candidate);
-        const profileText = renderProfileText({ ...candidate, ukLinks });
-        await this.db((db) =>
-          db
-            .update(candidates)
-            .set({
-              ukLinks,
-              ukLinkScore: ukLinkScore(ukLinks),
-              country: ukLinks.currentCountry ?? candidate.country,
-              profileText,
-            })
-            .where(eq(candidates.id, candidateId)),
-        );
-        return { ukLinks, profileText, category: candidate.category, sector: candidate.sector };
-      });
-
-      const persona = await step.do("build persona", STEP_CONFIG, async () => {
-        await this.db((db) =>
-          db.update(candidates).set({ status: "building_persona" }).where(eq(candidates.id, candidateId)),
-        );
-        const result = await buildPersona(this.env, enriched.profileText);
-        await this.db((db) => db.update(candidates).set({ persona: result }).where(eq(candidates.id, candidateId)));
-        return result;
-      });
-
-      const classification = await step.do("classify", STEP_CONFIG, async () => {
-        const { classification: result, netWorth } = await classifyCandidate(this.env, {
-          profileText: enriched.profileText,
-          persona,
-          ukLinks: enriched.ukLinks,
-          searchCategory: enriched.category,
-          searchSector: enriched.sector,
-        });
-        await this.db((db) =>
-          db
-            .update(candidates)
-            .set({
-              classification: result,
-              category: result.category,
-              sector: result.sector,
-              subSector: result.subSector,
-              criteria: result.criteria,
-              residenceRegion: result.residenceRegion,
-              nationality: result.nationality,
-              netWorth,
-              netWorthBand: netWorth.band,
-              netWorthUsd: netWorth.estimateUsd,
-            })
-            .where(eq(candidates.id, candidateId)),
-        );
-        return result;
-      });
-
-      await step.do("start interview", STEP_CONFIG, async () => {
-        await this.db(async (db) => {
-          await db.update(candidates).set({ status: "interviewing" }).where(eq(candidates.id, candidateId));
-          await db.delete(interviewAnswers).where(eq(interviewAnswers.candidateId, candidateId));
-        });
-      });
-
-      const answers: InterviewAnswerRow[] = [];
-      for (const question of buildInterviewQuestions(classification.category)) {
-        const answer = await step.do(`interview ${question.key}`, STEP_CONFIG, async () => {
-          const row = await interviewPersona(this.env, { id: candidateId }, persona, enriched.ukLinks, question, answers);
-          await this.db((db) =>
-            db
-              .insert(interviewAnswers)
-              .values(row)
-              .onConflictDoUpdate({
-                target: [interviewAnswers.candidateId, interviewAnswers.questionKey],
-                set: {
-                  question: row.question,
-                  type: row.type,
-                  options: row.options,
-                  probs: row.probs,
-                  reasoning: row.reasoning,
-                  response: row.response,
-                  expected: row.expected,
-                },
-              }),
-          );
-          return row;
-        });
-        answers.push(answer);
+    await db((db) =>
+      db.update(candidates).set({ status: "resolving", error: null }).where(eq(candidates.id, candidateId)),
+    );
+    const resolved = await resolveManualCandidate(readEnv(), candidate);
+    await db(async (db) => {
+      let profileUrl = resolved.profileUrl;
+      if (profileUrl && profileUrl !== candidate.profileUrl) {
+        const [existing] = await db
+          .select({ id: candidates.id })
+          .from(candidates)
+          .where(and(eq(candidates.profileUrl, profileUrl), ne(candidates.id, candidateId)));
+        if (existing) {
+          resolved.resolution.steps.push(`Matched profile ${profileUrl} is already in the database as another candidate`);
+          profileUrl = candidate.profileUrl;
+        }
       }
+      await db
+        .update(candidates)
+        .set({ ...resolved, profileUrl })
+        .where(eq(candidates.id, candidateId));
+    });
+    return true;
+  });
+}
 
-      await step.do("score", STEP_CONFIG, async () => {
-        await this.db((db) => db.update(candidates).set({ status: "scoring" }).where(eq(candidates.id, candidateId)));
-        const score = await scoreCandidate(this.env, enriched, persona, enriched.ukLinks, answers);
-        await this.db((db) =>
-          db
-            .update(candidates)
-            .set({
-              status: "scored",
-              score,
-              overallScore: score.overall,
-              opennessScore: score.openness,
-              ukLinkScore: score.ukLinks,
-            })
-            .where(eq(candidates.id, candidateId)),
-        );
-        return score.overall;
-      });
-    } catch (error) {
-      const message = errorMessage(error);
-      await step.do("mark candidate failed", async () => {
-        await this.db((db) =>
-          db.update(candidates).set({ status: "failed", error: message }).where(eq(candidates.id, candidateId)),
-        );
-      });
+async function enrichCandidate(candidateId: string): Promise<Enriched> {
+  "use step";
+  return withBackoff(async () => {
+    const candidate = await db(async (db) => {
+      await db.update(candidates).set({ status: "enriching", error: null }).where(eq(candidates.id, candidateId));
+      const [row] = await db.select().from(candidates).where(eq(candidates.id, candidateId));
+      return row;
+    });
+    if (!candidate) throw new FatalError(`Candidate ${candidateId} not found`);
+
+    const ukLinks = await enrichUkLinks(readEnv().EXA_API_KEY, candidate);
+    const profileText = renderProfileText({ ...candidate, ukLinks });
+    await db((db) =>
+      db
+        .update(candidates)
+        .set({
+          ukLinks,
+          ukLinkScore: ukLinkScore(ukLinks),
+          country: ukLinks.currentCountry ?? candidate.country,
+          profileText,
+        })
+        .where(eq(candidates.id, candidateId)),
+    );
+    return { ukLinks, profileText, category: candidate.category, sector: candidate.sector };
+  });
+}
+
+async function buildCandidatePersona(candidateId: string, profileText: string) {
+  "use step";
+  return withBackoff(async () => {
+    await db((db) => db.update(candidates).set({ status: "building_persona" }).where(eq(candidates.id, candidateId)));
+    const result = await buildPersona(readEnv(), profileText);
+    await db((db) => db.update(candidates).set({ persona: result }).where(eq(candidates.id, candidateId)));
+    return result;
+  });
+}
+
+async function classify(candidateId: string, enriched: Enriched, persona: PersonaAttributes) {
+  "use step";
+  return withBackoff(async () => {
+    const { classification: result, netWorth } = await classifyCandidate(readEnv(), {
+      profileText: enriched.profileText,
+      persona,
+      ukLinks: enriched.ukLinks,
+      searchCategory: enriched.category,
+      searchSector: enriched.sector,
+    });
+    await db((db) =>
+      db
+        .update(candidates)
+        .set({
+          classification: result,
+          category: result.category,
+          sector: result.sector,
+          subSector: result.subSector,
+          criteria: result.criteria,
+          residenceRegion: result.residenceRegion,
+          nationality: result.nationality,
+          netWorth,
+          netWorthBand: netWorth.band,
+          netWorthUsd: netWorth.estimateUsd,
+        })
+        .where(eq(candidates.id, candidateId)),
+    );
+    return result;
+  });
+}
+
+async function startInterview(candidateId: string) {
+  "use step";
+  await withBackoff(() =>
+    db(async (db) => {
+      await db.update(candidates).set({ status: "interviewing" }).where(eq(candidates.id, candidateId));
+      await db.delete(interviewAnswers).where(eq(interviewAnswers.candidateId, candidateId));
+    }),
+  );
+}
+
+async function interview(
+  candidateId: string,
+  persona: PersonaAttributes,
+  ukLinks: UkLinks,
+  question: InterviewQuestion,
+  answers: InterviewAnswerRow[],
+) {
+  "use step";
+  return withBackoff(async () => {
+    const row = await interviewPersona(readEnv(), { id: candidateId }, persona, ukLinks, question, answers);
+    await db((db) =>
+      db
+        .insert(interviewAnswers)
+        .values(row)
+        .onConflictDoUpdate({
+          target: [interviewAnswers.candidateId, interviewAnswers.questionKey],
+          set: {
+            question: row.question,
+            type: row.type,
+            options: row.options,
+            probs: row.probs,
+            reasoning: row.reasoning,
+            response: row.response,
+            expected: row.expected,
+          },
+        }),
+    );
+    return row;
+  });
+}
+
+async function score(candidateId: string, enriched: Enriched, persona: PersonaAttributes, answers: InterviewAnswerRow[]) {
+  "use step";
+  return withBackoff(async () => {
+    await db((db) => db.update(candidates).set({ status: "scoring" }).where(eq(candidates.id, candidateId)));
+    const result = await scoreCandidate(readEnv(), enriched, persona, enriched.ukLinks, answers);
+    await db((db) =>
+      db
+        .update(candidates)
+        .set({
+          status: "scored",
+          score: result,
+          overallScore: result.overall,
+          opennessScore: result.openness,
+          ukLinkScore: result.ukLinks,
+        })
+        .where(eq(candidates.id, candidateId)),
+    );
+    return result.overall;
+  });
+}
+
+async function markCandidateFailed(candidateId: string, message: string) {
+  "use step";
+  await withBackoff(() =>
+    db((db) => db.update(candidates).set({ status: "failed", error: message }).where(eq(candidates.id, candidateId))),
+  );
+}
+
+export async function candidateWorkflow({ candidateId }: CandidateWorkflowParams) {
+  "use workflow";
+
+  try {
+    await resolveCandidate(candidateId);
+    const enriched = await enrichCandidate(candidateId);
+    const persona = await buildCandidatePersona(candidateId, enriched.profileText);
+    const classification = await classify(candidateId, enriched, persona);
+    await startInterview(candidateId);
+
+    const answers: InterviewAnswerRow[] = [];
+    for (const question of buildInterviewQuestions(classification.category)) {
+      answers.push(await interview(candidateId, persona, enriched.ukLinks, question, answers));
     }
+
+    await score(candidateId, enriched, persona, answers);
+  } catch (error) {
+    await markCandidateFailed(candidateId, errorMessage(error));
   }
 }

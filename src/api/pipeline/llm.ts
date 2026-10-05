@@ -1,8 +1,9 @@
 import type { ChatMessage } from "../types";
 import type { JsonSchema } from "./json-schema";
 import { withRetries } from "./retry";
+import type { EnvVars } from "../env";
 
-export type LlmEnv = Pick<CloudflareBindings, "OPENAI_API_KEY" | "OPENAI_MODEL">;
+export type LlmEnv = Pick<EnvVars, "OPENAI_API_KEY" | "OPENAI_MODEL">;
 
 type Effort = "none" | "low" | "medium" | "high";
 
@@ -69,7 +70,7 @@ async function callOpenAI({ env, system, messages, effort, schema }: OpenAIReque
     throw new Error(`OpenAI request failed (${response.status}): ${(await response.text()).slice(0, 1000)}`);
   }
 
-  const data: OpenAIResponse = await response.json();
+  const data = (await response.json()) as OpenAIResponse;
   if (data.status !== "completed") {
     throw new Error(`OpenAI response not completed: ${data.incomplete_details?.reason ?? data.error?.message ?? data.status}`);
   }

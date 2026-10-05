@@ -1,10 +1,11 @@
 import { createMiddleware } from "hono/factory";
+import type { Bindings } from "../env";
 import { createDb, type Database } from "./db-client";
 
 export type { Database } from "./db-client";
 
 type DbEnv = {
-  Bindings: CloudflareBindings;
+  Bindings: Bindings;
   Variables: { db: Database };
 };
 

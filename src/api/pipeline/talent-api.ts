@@ -1,8 +1,9 @@
 import { normaliseCategory, normaliseSector } from "../lib/normalise-import";
 import { ALL, type ContactDetails, type CreateSearchBody, type SearchCategoryChoice, type SearchSectorChoice } from "../types";
 import { normaliseProfileUrl } from "./discover";
+import type { EnvVars } from "../env";
 
-type TalentApiEnv = Pick<CloudflareBindings, "TALENT_API_URL" | "TALENT_API_KEY">;
+type TalentApiEnv = Pick<EnvVars, "TALENT_API_URL" | "TALENT_API_KEY">;
 
 export type TalentSearch = {
   id: string;

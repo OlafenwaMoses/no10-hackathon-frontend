@@ -11,3 +11,8 @@ dist-ssr
 .wrangler
 .claude/
 exports/
+.vercel
+.output
+.nitro
+.workflow-data
+/.swc

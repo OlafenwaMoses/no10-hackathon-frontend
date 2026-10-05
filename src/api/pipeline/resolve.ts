@@ -3,8 +3,9 @@ import type { LinkedInProfile, Resolution } from "../types";
 import { normaliseProfileUrl, searchPeople, type DiscoveredPerson } from "./discover";
 import { fetchLinkedInProfile, resolveLinkedInProfileByName } from "./reverse-contact";
 import { errorMessage } from "./retry";
+import type { EnvVars } from "../env";
 
-type ResolveEnv = Pick<CloudflareBindings, "EXA_API_KEY" | "REVERSE_CONTACT_API_KEY">;
+type ResolveEnv = Pick<EnvVars, "EXA_API_KEY" | "REVERSE_CONTACT_API_KEY">;
 
 type ResolveCandidate = Pick<
   typeof candidates.$inferSelect,
