@@ -5,3 +5,6 @@
 .workflow-data
 node_modules
 site
+.swc
+.wrangler
+dist
