@@ -1,6 +1,6 @@
 # Running the dashboard with the talent agent API
 
-> On this `vercel` branch the dashboard runs on Vercel and calls the deployed talent API. See [VERCEL.md](VERCEL.md). The Docker Compose steps below are for the `talent-api-integration` branch, which still runs on Cloudflare's local runtime.
+> The deployed dashboard runs on Vercel and calls the deployed talent API; see [VERCEL.md](VERCEL.md). The steps below run both locally with Docker Compose.
 
 This dashboard can find people with the talent agent API instead of Exa people search. The API is the `service/` app in the NO10-Fellows repo, which this folder sits inside. When `TALENT_API_URL` is set, a search from the dashboard goes like this:
 
@@ -47,7 +47,7 @@ Other commands, also run from the NO10-Fellows folder:
 docker compose up -d --build            # run in the background
 docker compose logs -f api              # watch the agent work (tool calls, timings)
 docker compose logs -f frontend         # dashboard and workflow logs
-docker compose restart frontend         # after editing .dev.vars
+docker compose up -d frontend           # after editing .dev.vars
 docker compose down                     # stop both
 ```
 
@@ -89,13 +89,14 @@ The talent API caches each search. Running the same choices again, or the same c
    ```
 
 2. In this folder's `.dev.vars`, set `TALENT_API_URL=http://localhost:8000`.
-3. Run `bun i`, then `bun run dev`. Node.js must be installed, because Vite runs on Node.
+3. Copy `.dev.vars` to `.env.local`, which is where the dev server reads its settings.
+4. Run `bun i`, then `bun run dev`. Node.js must be installed, because Vite runs on Node.
 
 ## Troubleshooting
 
 | Problem | Cause and fix |
 | --- | --- |
-| Dashboard API errors with `Network connection lost` | The local Workers runtime can't verify TLS to Postgres. The compose image installs `ca-certificates` for this; rebuild with `docker compose up --build`. |
+| Dashboard API errors (500) mentioning the database, such as `branch ... does not exist` | `DATABASE_URL` in `.dev.vars` points to a database that no longer exists or rejects the login. Set a working one, then run `docker compose up -d frontend`. |
 | Dev server stops with `Unable to connect. Is the computer able to access the url?` | Vite is running on Bun instead of Node. Use the compose image, or install Node.js. |
 | Search fails with `Talent API ... failed (401)` | `TALENT_API_KEY` in `.dev.vars` doesn't match the API's `API_KEY`. |
 | Search fails with `Talent API ... failed (422)` | The API rejected the search. A custom query can be at most 1,000 characters, a custom region at most 60, and the number of people at most 50. |
@@ -106,4 +107,4 @@ The talent API caches each search. Running the same choices again, or the same c
 - **`src/api/pipeline/talent-api.ts` (new):** calls the talent API and turns its CSV into candidates.
 - **`src/api/workflows/search-workflow.ts`:** uses the talent API for discovery when `TALENT_API_URL` is set.
 - **`src/api/routes/searches/create.ts`:** passes the search form's fields to the workflow.
-- **`worker-configuration.d.ts`:** regenerated with `bun run cf-typegen` for the two new variables.
+- **Vercel port:** see [VERCEL.md](VERCEL.md) for the files changed to run on Vercel instead of Cloudflare Workers.

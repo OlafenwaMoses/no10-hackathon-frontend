@@ -20,7 +20,7 @@ Secrets live in `.dev.vars` locally (copy it to `.env.local` for `bun run dev`) 
 
 ## Architecture
 
-This `vercel` branch runs on Vercel (see `VERCEL.md`): React SPA (`src/web`) served as static assets, Hono API under `/api` (`src/api`, mounted by `src/api/server.ts` through Nitro). Environment variables are read in `src/api/env.ts`.
+This fork's `main` runs on Vercel (see `VERCEL.md`): React SPA (`src/web`) served as static assets, Hono API under `/api` (`src/api`, mounted by `src/api/server.ts` through Nitro). Environment variables are read in `src/api/env.ts`.
 
 - **Database:** Postgres via Drizzle + postgres-js, `casing: "snake_case"`. Schema in `src/api/db/schema`. Tables: `searches` (one pipeline run), `candidates` (one person, unique on `profile_url`, holds UK links / persona / score as jsonb), `interview_answers` (persona survey answers as probability distributions), `persona_messages` (chat with a persona).
 - **Pipeline:** Vercel Workflows (`workflow` package, `"use workflow"` and `"use step"`). `searchWorkflow` (`src/api/workflows/search-workflow.ts`) runs Exa people search, saves new candidates and fans out one `candidateWorkflow` per candidate: enrich UK links (Exa deep search with `outputSchema`) → build persona (LLM) → classify into the GTT Master Tracker taxonomy → interview persona (survey questions answered as probability distributions, ported from the engine's survey prompts) → score.

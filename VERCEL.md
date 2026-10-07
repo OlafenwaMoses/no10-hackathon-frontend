@@ -1,6 +1,6 @@
 # Running the dashboard on Vercel
 
-This branch, `vercel`, runs the dashboard on Vercel instead of Cloudflare Workers. It is a port of the source repo, [magerags/no10-hackathon](https://github.com/magerags/no10-hackathon), made in our fork, [OlafenwaMoses/no10-hackathon-frontend](https://github.com/OlafenwaMoses/no10-hackathon-frontend). It builds on the fork's `talent-api-integration` branch, so searches go through the talent agent API (see [TALENT_API.md](TALENT_API.md)).
+The `main` branch of this fork, [OlafenwaMoses/no10-hackathon-frontend](https://github.com/OlafenwaMoses/no10-hackathon-frontend), runs the dashboard on Vercel instead of Cloudflare Workers. It is a port of the source repo, [magerags/no10-hackathon](https://github.com/magerags/no10-hackathon), which is no longer publicly available. Searches go through the talent agent API (see [TALENT_API.md](TALENT_API.md)). The Cloudflare version with the same talent API integration is kept on the `talent-api-integration` branch.
 
 | What | Where |
 | --- | --- |
@@ -27,7 +27,7 @@ The public site in `site/` is still a separate Cloudflare Worker and is not depl
 
 | Variable | Type | Purpose |
 | --- | --- | --- |
-| `DATABASE_URL` | Sensitive | The shared Postgres database (PlanetScale, AWS `eu-west-2`) |
+| `DATABASE_URL` | Sensitive | The Postgres database the dashboard reads and writes |
 | `OPENAI_API_KEY`, `EXA_API_KEY` | Sensitive | The scoring pipeline: UK links, persona, classification, interview and score |
 | `REVERSE_CONTACT_API_KEY` | Sensitive | LinkedIn lookup for people added by hand |
 | `INBOUND_SECRET` | Sensitive | Checks posts from the public site's get-in-touch form to `/api/inbound` |
@@ -35,11 +35,11 @@ The public site in `site/` is still a separate Cloudflare Worker and is not depl
 | `TALENT_API_URL` | Plain | `https://no10-talent-api.vercel.app` |
 | `TALENT_API_KEY` | Plain | Sent as `x-api-key`. It must match the talent API's `API_KEY`. |
 
-Functions run in London (`lhr1`), next to the database. Vercel Workflows needs **Enable access to System Environment Variables** turned on in the project settings. It is on by default.
+Functions run in London (`lhr1`). Vercel Workflows needs **Enable access to System Environment Variables** turned on in the project settings. It is on by default.
 
 ## Deploy
 
-From a checkout of this branch, with a Vercel token for the `moses-olafenwas-projects` team:
+From a checkout of `main`, with a Vercel token for the `moses-olafenwas-projects` team:
 
 ```bash
 bun install
@@ -53,6 +53,8 @@ Vercel runs `bun run build`. That runs `tsc -b` and then `vite build`, and Nitro
 To watch searches and candidates move through their steps, open the project in the Vercel dashboard and go to **Observability**, then **Workflows**.
 
 ## Run it locally
+
+The NO10-Fellows repo runs this dashboard and the talent API together with Docker Compose; see [TALENT_API.md](TALENT_API.md). To run the dashboard on its own:
 
 ```bash
 cp .dev.vars .env.local    # Nitro reads .env.local; set TALENT_API_URL to a talent API you can reach
