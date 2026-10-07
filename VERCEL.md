@@ -27,7 +27,7 @@ The public site in `site/` is still a separate Cloudflare Worker and is not depl
 
 | Variable | Type | Purpose |
 | --- | --- | --- |
-| `DATABASE_URL` | Sensitive | The Postgres database the dashboard reads and writes |
+| `DATABASE_URL` | Set by the Neon integration | The Postgres database the dashboard reads and writes: Neon `no10-talent-dashboard-db`, free plan, London. Connecting it also adds `DATABASE_URL_UNPOOLED` and `PG*`/`POSTGRES_*` variables, which the app doesn't use. |
 | `OPENAI_API_KEY`, `EXA_API_KEY` | Sensitive | The scoring pipeline: UK links, persona, classification, interview and score |
 | `REVERSE_CONTACT_API_KEY` | Sensitive | LinkedIn lookup for people added by hand |
 | `INBOUND_SECRET` | Sensitive | Checks posts from the public site's get-in-touch form to `/api/inbound` |
@@ -35,7 +35,7 @@ The public site in `site/` is still a separate Cloudflare Worker and is not depl
 | `TALENT_API_URL` | Plain | `https://no10-talent-api.vercel.app` |
 | `TALENT_API_KEY` | Plain | Sent as `x-api-key`. It must match the talent API's `API_KEY`. |
 
-Functions run in London (`lhr1`). Vercel Workflows needs **Enable access to System Environment Variables** turned on in the project settings. It is on by default.
+Functions run in London (`lhr1`), like the database. Vercel Workflows needs **Enable access to System Environment Variables** turned on in the project settings. It is on by default.
 
 ## Deploy
 
